@@ -1,13 +1,11 @@
 module Chapter02
 
 open System
-open Xunit
-open FsUnit.Xunit
 
-// Listing 2-12
 module MilesYards =
     
     let private (~~) = float
+
     type MilesYards =
         private MilesYards of wholeMiles : int * yards : int
     
@@ -25,11 +23,20 @@ module MilesYards =
 
     let value (MilesYards (wholeMiles, yards)) = wholeMiles, yards
 
+
+open Xunit
+open FsUnit.Xunit
+
 open MilesYards
 
 [<Fact>]
 let ``fromMilesPointYards split miles and yards`` () =
     1.0880 |> fromMilesPointYards |> value |> should equal (1, 880)
+
+[<Fact>]
+let ``fromMilesPointYards throws when yards fraction too large`` () =
+    (fun () -> 1.1760 |> fromMilesPointYards |> ignore)
+    |> should throw typeof<ArgumentOutOfRangeException>
 
 [<Fact>]
 let ``toDecimalMiles 1 mile and 880 yards is 1.5 miles`` () =
