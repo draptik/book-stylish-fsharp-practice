@@ -10,6 +10,10 @@ module MilesYards =
         private MilesYards of wholeMiles : int * yards : int
     
     let fromMilesPointYards (milesPointYards : float) : MilesYards =
+        if milesPointYards < 0.0 then
+            raise <| ArgumentOutOfRangeException("milesPointYards",
+                                                 "Must be > 0.0")
+            
         let wholeMiles = milesPointYards |> floor |> int
         let fraction = milesPointYards - float(wholeMiles)
         if fraction > 0.1759 then
@@ -41,3 +45,8 @@ let ``fromMilesPointYards throws when yards fraction too large`` () =
 [<Fact>]
 let ``toDecimalMiles 1 mile and 880 yards is 1.5 miles`` () =
     1.0880 |> fromMilesPointYards |> toDecimalMiles |> should equal 1.5
+
+[<Fact>]
+let ``fromMilesPointYards throws when input is negative`` () =
+    (fun () -> -1. |> fromMilesPointYards |> ignore)
+    |> should throw typeof<ArgumentOutOfRangeException>
