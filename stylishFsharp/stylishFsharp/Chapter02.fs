@@ -6,6 +6,8 @@ open FsUnit.Xunit
 
 // Listing 2-12
 module MilesYards =
+    
+    let private (~~) = float
     type MilesYards =
         private MilesYards of wholeMiles : int * yards : int
     
@@ -18,10 +20,8 @@ module MilesYards =
         let yards = fraction * 10_000. |> round |> int
         MilesYards(wholeMiles, yards)
         
-    let toDecimalMiles (milesYards : MilesYards) : float =
-        match milesYards with
-        | MilesYards(wholeMiles, yards) ->
-            (float wholeMiles) + ((float yards) / 1760.)
+    let toDecimalMiles (MilesYards(wholeMiles, yards)) : float =
+        ~~wholeMiles + (~~yards / 1760.)
 
     let value (MilesYards (wholeMiles, yards)) = wholeMiles, yards
 
