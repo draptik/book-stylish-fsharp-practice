@@ -46,12 +46,12 @@ module Exercise04_Whitebox_Tests =
         let house3 = { Address = "address 3"; Price = 100_000m }
         
         let houses = [house1; house2; house3]
-        let expected = seq [house1, 13; house2, 13]
+        let expected = seq [house1, 13; house2, 13] |> Seq.toList
         
         let actual =
             houses
             |> schoolDistances
             
-        test <@ actual = expected @>
+        test <@ actual |> Seq.toList = expected  @>
         
         
