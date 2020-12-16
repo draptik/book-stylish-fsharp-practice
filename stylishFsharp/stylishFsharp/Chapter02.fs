@@ -1,4 +1,4 @@
-module Chapter02
+﻿module Chapter02
 
 open System
 
@@ -46,38 +46,3 @@ module MilesChains =
         
     let toDecimalMiles (MilesChains(wholeMiles, chains)) =
         ~~wholeMiles + (~~chains / 80.)
-
-
-open Xunit
-open FsUnit.Xunit
-
-open MilesYards
-open MilesChains
-
-[<Fact>]
-let ``MilesYards fromMilesPointYards split miles and yards`` () =
-    1.0880 |> fromMilesPointYards |> value |> should equal (1, 880)
-
-[<Fact>]
-let ``MilesYards fromMilesPointYards throws when yards fraction too large`` () =
-    (fun () -> 1.1760 |> fromMilesPointYards |> ignore)
-    |> should throw typeof<ArgumentOutOfRangeException>
-
-[<Fact>]
-let ``MilesYards toDecimalMiles 1 mile and 880 yards is 1.5 miles`` () =
-    1.0880 |> fromMilesPointYards |> MilesYards.toDecimalMiles |> should equal 1.5
-
-[<Fact>]
-let ``MilesYards fromMilesPointYards throws when input is negative`` () =
-    (fun () -> -1. |> fromMilesPointYards |> ignore)
-    |> should throw typeof<ArgumentOutOfRangeException>
-
-
-[<Fact>]
-let ``MilesChains fromMilesChains throws when chain too large`` () =
-    (fun () -> (1, 80) |> fromMilesChains |> ignore)
-    |> should throw typeof<ArgumentOutOfRangeException>
-
-[<Fact>]
-let ``MilesChains fromMilesChains toDecimalValue 1 40 is 1.5 miles`` () =
-    (1, 40) |> fromMilesChains |> MilesChains.toDecimalMiles |> should equal 1.5
