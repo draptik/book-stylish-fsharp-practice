@@ -34,28 +34,16 @@ let collectionFor (storeId : int) (billingDetails : BillingDetails seq) =
         match d.delivery with
         | ClickAndCollect id when id = storeId -> Some d
         | _ -> None)
-    
-let myOrder = {
-    name = "Kit Easton"
-    billing = "112 Fibonacci Street\nErewhon\n35813"
-    delivery = AsBilling }
 
-let hisOrder = {
-    name = "John Doe"
-    billing = "314 Pi Avenue\nErewhon\n15926"
-    delivery = Physical "16 Planck Parkway\nErewhon\n62291" }
-
-let herOrder = {
-    name = "Jane Smith"
-    billing = "9 Gravity Road\nErewhon\n80665"
-    delivery = Download }
-
-let homerOrder = { name = "Homer Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 1 }
-let lisaOrder = { name = "Lisa Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 1 }
-let margeOrder = { name = "Marge Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 2 }
+let getNumberOfNonNullBillingAddresses (billingDetails : BillingDetails seq) =
+    0
 
 open Xunit
 open FsUnit.Xunit
+    
+let myOrder = { name = "Kit Easton"; billing = "112 Fibonacci Street\nErewhon\n35813"; delivery = AsBilling }
+let hisOrder = { name = "John Doe"; billing = "314 Pi Avenue\nErewhon\n15926"; delivery = Physical "16 Planck Parkway\nErewhon\n62291" }
+let herOrder = { name = "Jane Smith"; billing = "9 Gravity Road\nErewhon\n80665"; delivery = Download }
 
 [<Fact>]
 let ``AsBilling has correct delivery label`` () =
@@ -93,6 +81,10 @@ Erewhon
 
 [<Fact>]
 let ``Click and Collect works`` () =
+    let homerOrder = { name = "Homer Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 1 }
+    let lisaOrder = { name = "Lisa Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 1 }
+    let margeOrder = { name = "Marge Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 2 }
+
     let storeId1 = 1
     let orders = [myOrder; hisOrder; herOrder; homerOrder; lisaOrder; margeOrder]
     orders
@@ -101,3 +93,14 @@ let ``Click and Collect works`` () =
     |> should equal [
            { name = "Homer Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 1 }
            { name = "Lisa Simpson"; billing = "Evergreen Terrace 1"; delivery = ClickAndCollect 1 }]
+
+[<Fact>]
+let ``getNumberOfNonNullBillingAddresses from collection works`` () =
+    // off course Homer forgets to add his billing address ;-)
+    let homerOrder = { name = "Homer Simpson"; billing = null; delivery = Download }
+    let lisaOrder = { name = "Lisa Simpson"; billing = "Evergreen Terrace 1"; delivery = Download }
+    let margeOrder = { name = "Marge Simpson"; billing = "Evergreen Terrace 1"; delivery = Download }
+    [homerOrder; lisaOrder; margeOrder]
+    |> getNumberOfNonNullBillingAddresses
+    |> should equal 2
+    
