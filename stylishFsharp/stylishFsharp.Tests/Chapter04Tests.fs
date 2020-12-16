@@ -38,4 +38,20 @@ module Exercise04_Whitebox_Tests =
         let expected = actual |> Array.filter (fun x -> x.Price > 250_000m)
         test <@ abovePrice actual 250_000m = expected  @>
         
+    [<Fact>]
+    let ``Exercise 4-4: Returns tuple of House * SchoolDistance and excludes houses outside of school distance`` () =
+
+        let house1 = { Address = "address 1"; Price = 100_000m }
+        let house2 = { Address = "address 12"; Price = 100_000m }
+        let house3 = { Address = "address 3"; Price = 100_000m }
+        
+        let houses = [house1; house2; house3]
+        let expected = seq [house1, 13; house2, 13]
+        
+        let actual =
+            houses
+            |> schoolDistances
+            
+        test <@ actual = expected @>
+        
         

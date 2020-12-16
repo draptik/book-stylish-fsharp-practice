@@ -14,12 +14,19 @@ module Houses =
     let random = System.Random(Seed = 1)
     
     let trySchoolDistance (house: House) =
-        let dist = random.Next(10) |> double
-        if dist < 8. then
-            Some dist
+        let a = house.Address
+        if a.Contains("address 1") then
+            Some 13
         else
             None
-            
+
+    let schoolDistances (houses: House seq) : (House * int) seq =
+        houses
+        |> Seq.choose (fun house ->
+            match house |> trySchoolDistance with
+            | Some distance -> Some (house, distance)
+            | None -> None)
+        
     let priceBand (price : decimal) =
         if price < 100_000m then
             Cheap
