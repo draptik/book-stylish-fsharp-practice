@@ -32,9 +32,7 @@ let collectionFor (storeId : int) (billingDetails : BillingDetails seq) =
     billingDetails
     |> Seq.choose (fun d ->
         match d.delivery with
-        | ClickAndCollect id ->
-            if id = storeId then Some d
-            else None
+        | ClickAndCollect id when id = storeId -> Some d
         | _ -> None)
     
 let myOrder = {
