@@ -36,7 +36,18 @@ let collectionFor (storeId : int) (billingDetails : BillingDetails seq) =
         | _ -> None)
 
 let getNumberOfNonNullBillingAddresses (billingDetails : BillingDetails seq) =
-    0
+    billingDetails
+    |> Seq.choose(fun x ->
+        if x.billing = null then None
+        else Some 1)
+    |> Seq.sum
+
+// alternative solution to `getNumberOfNonNullBillingAddresses` from book:
+let countNonNullBillingAddresses (orders : seq<BillingDetails>) =
+    orders
+    |> Seq.map (fun bd -> bd.billing)
+    |> Seq.map Option.ofObj
+    |> Seq.sumBy Option.count
 
 open Xunit
 open FsUnit.Xunit
@@ -102,5 +113,6 @@ let ``getNumberOfNonNullBillingAddresses from collection works`` () =
     let margeOrder = { name = "Marge Simpson"; billing = "Evergreen Terrace 1"; delivery = Download }
     [homerOrder; lisaOrder; margeOrder]
     |> getNumberOfNonNullBillingAddresses
+//    |> countNonNullBillingAddresses
     |> should equal 2
     
