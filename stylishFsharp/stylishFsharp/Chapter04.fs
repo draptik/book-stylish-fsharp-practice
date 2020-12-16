@@ -28,6 +28,12 @@ module Houses =
         else
             Expensive
 
+    let averagePrice houses =
+        houses |> Array.averageBy (fun x -> x.Price)
+        
+    let abovePrice houses price =
+        houses |> Array.filter (fun x -> x.Price > price)
+
 module Exercise04_01 =
     open Houses
     
