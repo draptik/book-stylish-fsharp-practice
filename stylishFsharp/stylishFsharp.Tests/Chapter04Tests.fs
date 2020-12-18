@@ -65,3 +65,16 @@ module Exercise04_Whitebox_Tests =
         
         test <@ actual = [house3] @>
 
+    [<Fact>]
+    let ``Exercise 4-6 (modified): Get houses with price larger 100 grand and sorted by price`` () =
+        let house1 = { Address = "address 1"; Price = 99_999m }
+        let house2 = { Address = "address 2"; Price = 100_000m }
+        let house3 = { Address = "address 3"; Price = 100_001m }
+        let house4 = { Address = "address 4"; Price = 200_000m }
+        let house5 = { Address = "address 5"; Price = 150_000m }
+        let houses = [house1; house2; house3; house4; house5]
+        
+        let actual = houses |> getHousesAbove100Grand
+        
+        test <@ actual = [house3; house5; house4] @>
+
