@@ -31,4 +31,23 @@ let rangeCounter lowerBound upperBound =
             else
                 next
         this
+
+let featureScale targetMin targetMax actualMin actualMax x =
+    targetMin + ((x - actualMin) * (targetMax - targetMin)) / (actualMax - actualMin)
+
+let scale (data: seq<float>) =
+    let minX = data |> Seq.min
+    let maxX = data |> Seq.max
+    
+    data
+    |> Seq.map (fun x -> featureScale 0. 1. minX maxX x)
+
+let scale' (data: seq<float>) =
+    let minX = data |> Seq.min
+    let maxX = data |> Seq.max
+    let zeroOneScaled =
+        featureScale 0. 1. minX maxX
+        
+    data
+    |> Seq.map zeroOneScaled
     

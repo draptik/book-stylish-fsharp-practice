@@ -45,5 +45,16 @@ let ``Exercise 9-2: Functions returning functions (with hidden state inside the 
     test <@ actualFcn() = 5 @>
 
 [<Fact>]
-let ``Exercise 9-3`` () =
-    0
+let ``Exercise 9-3: Partial application - 1/2 initial code`` () =
+    let input = seq [100.; 150.; 200.]
+    let actual = scale input |> Seq.toList
+    let expected = [0.0; 0.5; 1.0]
+    test <@ actual = expected @>
+
+[<Fact>]
+let ``Exercise 9-3: Partial application - 2/2 without lambda at end of scale' function`` () =
+    let input = seq [100.; 150.; 200.]
+    let actual = scale' input |> Seq.toList
+    let expected = [0.0; 0.5; 1.0]
+    test <@ actual = expected @>
+    
