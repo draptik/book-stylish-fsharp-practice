@@ -1,13 +1,11 @@
 module Chapter04Tests
 
-open System
 open Xunit
 open FsUnit.Xunit
 open Swensen.Unquote
 
 module Exercise04_01_Tests =
 
-    open Chapter04.Houses
     open Chapter04.Exercise04_01
     
     [<Fact>]
@@ -37,7 +35,11 @@ module Exercise04_Whitebox_Tests =
         let actual = getHouses 20
         let expected = actual |> Array.filter (fun x -> x.Price > 250_000m)
         test <@ abovePrice actual 250_000m = expected  @>
+
+module Exercise04_Blackbox_Tests =
         
+    open Chapter04.Houses
+    
     [<Fact>]
     let ``Exercise 4-4: Returns sequence of tuples (House * SchoolDistance) and excludes houses outside of school distance`` () =
 
@@ -126,3 +128,37 @@ module Exercise04_Whitebox_Tests =
             (Medium, [house2]);
             (Expensive, [house6; house4; house7])] @>
 
+module Exercise04_Try_Function_Exercises =
+        
+    open Chapter04.Houses
+
+    [<Fact>]
+    let ``Exercise 4-10: Filtering, average and try - 1/2 houses above 200K exist`` () =
+        let house1 = { Address = "address 1"; Price = 99_999m }
+        let house2 = { Address = "address 2"; Price = 100_000m }
+        let house3 = { Address = "address 3"; Price = 100_001m }
+        let house4 = { Address = "address 4"; Price = 250_000m }
+        let house5 = { Address = "address 5"; Price = 250_000m }
+        let house6 = { Address = "address 6"; Price = 350_000m }
+        let house7 = { Address = "address 7"; Price = 560_000m }
+        let houses = [house1; house2; house3; house4; house5; house6; house7]
+        
+        let actual = houses |> tryGetAverageOfHouseAbove200grand
+        
+        test <@ actual = (Some (352_500m)) @>
+
+    [<Fact>]
+    let ``Exercise 4-10: Filtering, average and try - 2/2 no houses above 200K`` () =
+        let house1 = { Address = "address 1"; Price = 99_999m }
+        let house2 = { Address = "address 2"; Price = 100_000m }
+        let house3 = { Address = "address 3"; Price = 100_001m }
+        let house4 = { Address = "address 4"; Price = 25_000m }
+        let house5 = { Address = "address 5"; Price = 25_000m }
+        let house6 = { Address = "address 6"; Price = 35_000m }
+        let house7 = { Address = "address 7"; Price = 56_000m }
+        let houses = [house1; house2; house3; house4; house5; house6; house7]
+        
+        let actual = houses |> tryGetAverageOfHouseAbove200grand
+        
+        test <@ actual = None @>
+        

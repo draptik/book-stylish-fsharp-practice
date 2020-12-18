@@ -1,5 +1,11 @@
 module Chapter04
 
+module List =
+    let tryAverageBy f list =
+        match list with
+        | [] -> None
+        | xs -> xs |> List.averageBy f |> Some
+        
 module Houses =
     
     type House = { Address : string; Price : decimal }
@@ -50,6 +56,11 @@ module Houses =
         houses
         |> List.filter (fun h -> h.Price > 200_000m)
         |> List.averageBy (fun h -> h.Price)
+
+    let tryGetAverageOfHouseAbove200grand (houses : House list) =
+        houses
+        |> List.filter (fun h -> h.Price > 200_000m)
+        |> List.tryAverageBy (fun h -> h.Price)
 
     let getFirstHouseUnder100grandAndWithSchoolDistance (houses : House list) =
         houses
