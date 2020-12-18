@@ -93,3 +93,18 @@ module Exercise04_Whitebox_Tests =
         
         test <@ actual = 352_500m @>
 
+    [<Fact>]
+    let ``Exercise 4-8 (modified): 1st house that costs less than 100_000 and has school distance`` () =
+        let house1 = { Address = "address x 1"; Price = 99_999m }
+        let house2 = { Address = "address 2"; Price = 100_000m }
+        let house3 = { Address = "address 13"; Price = 50_001m }
+        let house4 = { Address = "address 14"; Price = 250_000m }
+        let house5 = { Address = "address 15"; Price = 50_000m }
+        let house6 = { Address = "address 6"; Price = 350_000m }
+        let house7 = { Address = "address 7"; Price = 560_000m }
+        let houses = [house1; house2; house3; house4; house5; house6; house7]
+        
+        let actual = houses |> getFirstHouseUnder100grandAndWithSchoolDistance
+        
+        test <@ actual = (house3, 13) @>
+

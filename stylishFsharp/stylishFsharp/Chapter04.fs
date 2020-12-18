@@ -50,6 +50,12 @@ module Houses =
         houses
         |> List.filter (fun h -> h.Price > 200_000m)
         |> List.averageBy (fun h -> h.Price)
+
+    let getFirstHouseUnder100grandAndWithSchoolDistance (houses : House list) =
+        houses
+        |> List.filter (fun h -> h.Price < 100_000m)
+        |> schoolDistances
+        |> Seq.head
         
 module Exercise04_01 =
     open Houses
