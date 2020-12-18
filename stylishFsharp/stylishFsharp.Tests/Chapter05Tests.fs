@@ -14,5 +14,22 @@ let ``Exercise 5-1: Clipping a sequence`` () =
     let expected = [ 1.0; 2.3; 10.; -5. ]
     
     test <@ actual = expected @>
+
+[<Fact>]
+let ``Exercise 5-2: Minimum and Maximum - Mutable version`` () =
+    let actual =
+        [| 1.0; 2.3; 11.1; -5. |]
+        |> extremes
+    let expected = -5.0, 11.1
     
+    test <@ actual = expected @>
+
+[<Fact>]
+let ``Exercise 5-2: Minimum and Maximum - Immutable version`` () =
+    let actual =
+        [| 1.0; 2.3; 11.1; -5. |]
+        |> extremes'
+    let expected = -5.0, 11.1
+    
+    test <@ actual = expected @>
 
