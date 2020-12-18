@@ -17,4 +17,11 @@ let ``Exercise 8-2: Secondary Constructor`` () =
     let actual = grayScale.Level
     let expected = 83uy
     test <@ actual = expected @>
+
+[<Fact>]
+let ``Exercise 8-3: Overrides ToString`` () =
+    let grayScale = GrayScale(System.Drawing.Color.Brown)
+    let actual = grayScale.ToString()
+    let expected = "GrayScale(83)"
+    test <@ actual = expected @>
     
