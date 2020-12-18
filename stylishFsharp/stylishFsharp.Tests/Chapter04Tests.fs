@@ -78,3 +78,18 @@ module Exercise04_Whitebox_Tests =
         
         test <@ actual = [house3; house5; house4] @>
 
+    [<Fact>]
+    let ``Exercise 4-7 (modified): Average price of houses above 200_000`` () =
+        let house1 = { Address = "address 1"; Price = 99_999m }
+        let house2 = { Address = "address 2"; Price = 100_000m }
+        let house3 = { Address = "address 3"; Price = 100_001m }
+        let house4 = { Address = "address 4"; Price = 250_000m }
+        let house5 = { Address = "address 5"; Price = 250_000m }
+        let house6 = { Address = "address 6"; Price = 350_000m }
+        let house7 = { Address = "address 7"; Price = 560_000m }
+        let houses = [house1; house2; house3; house4; house5; house6; house7]
+        
+        let actual = houses |> getAverageOfHouseAbove200grand
+        
+        test <@ actual = 352_500m @>
+

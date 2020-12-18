@@ -46,6 +46,11 @@ module Houses =
         |> List.filter (fun h -> h.Price > 100_000m)
         |> List.sortBy (fun h -> h.Price)
 
+    let getAverageOfHouseAbove200grand (houses : House list) =
+        houses
+        |> List.filter (fun h -> h.Price > 200_000m)
+        |> List.averageBy (fun h -> h.Price)
+        
 module Exercise04_01 =
     open Houses
     
