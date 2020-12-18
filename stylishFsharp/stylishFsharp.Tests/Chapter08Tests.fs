@@ -10,4 +10,11 @@ let ``Exercise 8-1: A simple class`` () =
     let actual = grayScale.Level
     let expected = 255uy
     test <@ actual = expected @>
+
+[<Fact>]
+let ``Exercise 8-2: Secondary Constructor`` () =
+    let grayScale = GrayScale(System.Drawing.Color.Brown)
+    let actual = grayScale.Level
+    let expected = 83uy
+    test <@ actual = expected @>
     
