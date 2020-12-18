@@ -56,6 +56,13 @@ module Houses =
         |> List.filter (fun h -> h.Price < 100_000m)
         |> schoolDistances
         |> Seq.head
+    
+    let groupByPriceBandAndSortByPrice (houses : House list) =
+        houses
+        |> List.groupBy (fun h -> h.Price |> priceBand)
+        |> List.map (fun (pb, hs) ->
+            pb, hs |> List.sortBy (fun h -> h.Price))
+        
         
 module Exercise04_01 =
     open Houses
