@@ -41,6 +41,10 @@ module Houses =
     let abovePrice houses price =
         houses |> Array.filter (fun x -> x.Price > price)
 
+    let getHousesAbove100Grand (houses : House list) =
+        houses
+        |> List.filter (fun h -> h.Price > 100_000m)
+
 module Exercise04_01 =
     open Houses
     
@@ -48,4 +52,11 @@ module Exercise04_01 =
         getHouses 20
         |> Array.map (fun h ->
             sprintf "Address: %s - Price: %f" h.Address h.Price)
+
+module Exercise04_05 =
+    open Houses
     
+    getHouses 20
+    |> Array.filter (fun h -> h.Price > 100_000m)
+    |> Array.iter (fun h ->
+        printfn "Address: %s Price %f" h.Address h.Price)

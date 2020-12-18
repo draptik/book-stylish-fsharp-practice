@@ -39,7 +39,7 @@ module Exercise04_Whitebox_Tests =
         test <@ abovePrice actual 250_000m = expected  @>
         
     [<Fact>]
-    let ``Exercise 4-4: Returns tuple of House * SchoolDistance and excludes houses outside of school distance`` () =
+    let ``Exercise 4-4: Returns sequence of tuples (House * SchoolDistance) and excludes houses outside of school distance`` () =
 
         let house1 = { Address = "address 1"; Price = 100_000m }
         let house2 = { Address = "address 12"; Price = 100_000m }
@@ -52,6 +52,16 @@ module Exercise04_Whitebox_Tests =
             houses
             |> schoolDistances
             
-        test <@ actual |> Seq.toList = expected  @>
+        test <@ actual |> Seq.toList = expected @>
+               
+    [<Fact>]
+    let ``Exercise 4-5 (modified): Get houses with price larger 100 grand`` () =
+        let house1 = { Address = "address 1"; Price = 99_999m }
+        let house2 = { Address = "address 12"; Price = 100_000m }
+        let house3 = { Address = "address 3"; Price = 100_001m }
+        let houses = [house1; house2; house3]
         
+        let actual = houses |> getHousesAbove100Grand
         
+        test <@ actual = [house3] @>
+
