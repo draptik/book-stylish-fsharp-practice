@@ -57,4 +57,20 @@ let ``Exercise 9-3: Partial application - 2/2 without lambda at end of scale' fu
     let actual = scale' input |> Seq.toList
     let expected = [0.0; 0.5; 1.0]
     test <@ actual = expected @>
+
+[<Fact>]
+let ``Exercise 9-4: Function Composition - applyAll`` () =
+    let input = 100
     
+    let pipeline =
+        [ fun x -> x * 2
+          fun x -> x * x
+          fun x -> x - 99 ]
+
+    let actual =
+        input
+        |> applyAll pipeline
+
+    let expected = 39901 // ((100 * 2) * (100 * 2)) - 99
+    
+    test <@ actual = expected @>

@@ -1,5 +1,7 @@
 module Chapter09
 
+open System
+
 let add a b = a + b
 
 let applyAndPrint f a b =
@@ -50,4 +52,8 @@ let scale' (data: seq<float>) =
         
     data
     |> Seq.map zeroOneScaled
+
+let applyAll (myFcnList : (int -> int) list) =
+    (* This is advanced: Take some time to think about what is happening here *)
+    myFcnList |> List.reduce (>>)
     
