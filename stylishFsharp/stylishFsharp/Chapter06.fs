@@ -11,20 +11,11 @@ type MeterReading = {
     MeterValue : MeterValue
 }
 
-let formatReading (meterReading: MeterReading) : string =
-        
-    let formatDate reading =
-        // pattern matching record in let:
-        let ({ ReadingDate = readingDate }) = reading
-        readingDate.ToString("yyyy-MM-dd")
-    
-    let formattedMeterValue reading =
-        // pattern matching record in let:
-        let ({ MeterValue = meterValue }) = reading
-        match meterValue with
-        | Standard s -> sprintf " was %07i" s
-        | Economy(Day=d; Night=n) -> sprintf ": Day: %07i Night: %07i" d n
-    
-    sprintf "Your reading on: %s%s"
-        (formatDate meterReading)
-        (formattedMeterValue meterReading) 
+// Pattern matching on record
+let formatReading { ReadingDate = date; MeterValue = meterValue } =
+    let dateString = date.ToString("yyyy-MM-dd")    
+    match meterValue with
+    | Standard reading ->
+        sprintf "Your reading on: %s was %07i" dateString reading
+    | Economy(Day=day; Night=night) ->
+        sprintf "Your reading on: %s: Day: %07i Night: %07i" dateString day night
