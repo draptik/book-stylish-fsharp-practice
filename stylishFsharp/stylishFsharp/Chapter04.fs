@@ -67,6 +67,14 @@ module Houses =
         |> List.filter (fun h -> h.Price < 100_000m)
         |> schoolDistances
         |> Seq.head
+
+    let tryGetFirstHouseUnder100grandAndWithSchoolDistance (houses : House list) =
+        houses
+        |> List.filter (fun h -> h.Price < 100_000m)
+        |> List.tryPick (fun h ->
+            match h |> trySchoolDistance with
+            | Some d -> Some (h, d)
+            | None -> None)
     
     let groupByPriceBandAndSortByPrice (houses : House list) =
         houses
