@@ -12,20 +12,7 @@ type MeterReading = {
 }
 
 let formatReading (meterReading: MeterReading) : string =
-
-    let leftPad num desiredStringLength paddingChar =
-        let numString = num.ToString()
-        let currentLength = numString |> String.length
-        match currentLength <= desiredStringLength with
-        | true ->
-            String.replicate (desiredStringLength - currentLength) paddingChar + numString
-            |> sprintf "%s"
-        | false ->
-            numString |> sprintf "%s"
         
-    let formatNum n =
-        leftPad n 7 "0" |> sprintf "%s"
-    
     let formatDate reading =
         // pattern matching record in let:
         let ({ ReadingDate = readingDate }) = reading
@@ -35,10 +22,8 @@ let formatReading (meterReading: MeterReading) : string =
         // pattern matching record in let:
         let ({ MeterValue = meterValue }) = reading
         match meterValue with
-        | Standard s ->
-            sprintf " was %s" (formatNum s)
-        | Economy(Day=d; Night=n) ->
-            sprintf ": Day: %s Night: %s" (formatNum d) (formatNum n)
+        | Standard s -> sprintf " was %07i" s
+        | Economy(Day=d; Night=n) -> sprintf ": Day: %07i Night: %07i" d n
     
     sprintf "Your reading on: %s%s"
         (formatDate meterReading)
