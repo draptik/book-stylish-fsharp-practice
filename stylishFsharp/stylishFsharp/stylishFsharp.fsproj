@@ -9,6 +9,7 @@
         <Compile Include="Chapter03.fs" />
         <Compile Include="Chapter04.fs" />
         <Compile Include="Chapter05.fs" />
+        <Compile Include="Chapter06.fs" />
     </ItemGroup>
 
 </Project>
