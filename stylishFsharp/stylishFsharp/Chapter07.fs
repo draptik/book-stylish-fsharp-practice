@@ -17,6 +17,12 @@ type PositionStruct = {
     Time: DateTime
 }
 
+let translate dx dy dz pos =
+    { pos with
+        PositionStruct.X = pos.X + dx
+        Y = pos.Y + dy
+        Z = pos.Z + dz }
+
 type Track (name : string, artist : string) =
     member __.Name = name
     member __.Artist = artist

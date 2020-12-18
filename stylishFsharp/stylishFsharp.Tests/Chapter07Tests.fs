@@ -45,4 +45,13 @@ let ``Exercise 7-3: Equality and Comparison`` () =
        { Name = "The Mollusk"; Artist = "Ween" }]
     
     test <@ actual = expected @>
-            
+
+[<Fact>]
+let ``Exercise 7-4: Modifying records`` () =
+    let input = { PositionStruct.X = float32 1; Y = float32 1; Z = float32 1; Time = DateTime(2021, 1, 1) }
+    let actual = input |> translate (float32 2) (float32 3) (float32 4)
+    let expected = { PositionStruct.X = float32 3; Y = float32 4; Z = float32 5; Time = DateTime(2021, 1, 1) }
+
+    test <@ actual = expected @>
+     
+     
