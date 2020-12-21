@@ -13,6 +13,11 @@
         <Compile Include="Chapter07.fs" />
         <Compile Include="Chapter08.fs" />
         <Compile Include="Chapter09.fs" />
+        <Compile Include="Chapter10.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FSharp.Data" Version="3.3.3" />
     </ItemGroup>
 
 </Project>
