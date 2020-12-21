@@ -5,7 +5,16 @@ open System.Diagnostics
 open Xunit
 open Swensen.Unquote
 open Chapter10
+open Xunit.Abstractions
 
+(* This is just an experiment to see if we can capture side-effects in xunit... *)
+type Chapter10TestsWithOutput(o : ITestOutputHelper) =
+    let output = o 
+
+    [<Fact>]
+    let ``Output sample`` () =
+        output.WriteLine("Hello from test")
+    
 [<Fact(Skip="Sample code from book")>]
 let ``Demo 1 - Synchronous code`` () =
     let uri = Uri @"https://minorplanetcenter.net/data"
