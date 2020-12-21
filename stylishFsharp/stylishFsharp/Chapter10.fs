@@ -16,22 +16,22 @@ module Log =
     let yellow = report ConsoleColor.Yellow
     let cyan = report ConsoleColor.Cyan
     
+(* NOTE: Outcome differs from book example: Outcome contains tuple filename*message *)    
 module Outcome =
     type Outcome =
-        | OK of filename:string
-        | Failed of filename:string
+        | OK of filename:string * msg:string
+        | Failed of filename:string * msg:string
         
     let isOk = function
         | OK _ -> true
         | Failed _ -> false
     
     let fileName = function
-        | OK fn
-        | Failed fn -> fn
+        | OK (fn, _) -> fn
+        | Failed (fn, _) -> fn
 
 module Download =
     open System
-    open System.IO
     open System.Net
     open System.Text.RegularExpressions
     // NuGet package FSharp.Data
@@ -72,19 +72,22 @@ module Download =
         try
             client.DownloadFile(fileUri, filePath)
             Log.green (sprintf "%s - download complete" fileName)
-            Outcome.OK fileName
+            Outcome.OK (fileName, (sprintf "%s - download complete" fileName))
         with
         | e ->
             Log.red (sprintf "%s - error: %s" fileName e.Message)
-            Outcome.Failed fileName
+            Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message))
             
-    let GetFiles (pageUri : Uri) (filePattern : string) (localPath : string) =
+    let GetOutcomes (pageUri : Uri) (filePattern : string) (localPath : string) =
         let links = getLinks pageUri filePattern
         let downloaded, failed =
             links
             |> Array.map (tryDownload localPath)
             |> Array.partition Outcome.isOk
+        downloaded, failed
             
+    let GetFiles (pageUri : Uri) (filePattern : string) (localPath : string) =
+        let downloaded, failed = GetOutcomes pageUri filePattern localPath
         downloaded |> Array.map Outcome.fileName,
         failed |> Array.map Outcome.fileName
 
@@ -95,6 +98,6 @@ module Run =
     let pattern = @"neam.*\.json\.gz$"
     let localPath = ""
                         
-    let Get =
-        Download.GetFiles uri pattern localPath
+    let GetAll =
+        Download.GetOutcomes uri pattern localPath
         
