@@ -1,5 +1,6 @@
 module Chapter10
 
+open System.Diagnostics
 open System.IO
 
 module Log =
@@ -91,6 +92,11 @@ module Download =
         downloaded |> Array.map Outcome.fileName,
         failed |> Array.map Outcome.fileName
 
+type OutcomeResult = {
+    Outcomes: Outcome.Outcome[] * Outcome.Outcome[]
+    ElapsedSeconds: float
+}
+
 module Run =
     open System
     
@@ -99,5 +105,11 @@ module Run =
     let localPath = ""
                         
     let GetAll =
-        Download.GetOutcomes uri pattern localPath
+        let stopwatch = Stopwatch.StartNew()
+        let outcomes = Download.GetOutcomes uri pattern localPath
+        stopwatch.Stop()
+        let elapsedSeconds = stopwatch.Elapsed.TotalSeconds
+        
+        { Outcomes = outcomes 
+          ElapsedSeconds = elapsedSeconds }
         

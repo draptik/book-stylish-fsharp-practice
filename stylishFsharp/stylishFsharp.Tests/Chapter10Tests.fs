@@ -44,10 +44,13 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     [<Fact(Skip="Slow running test - only include manually")>]
 //    [<Fact>]
     let ``Demo 2 - Synchronous code`` () =
-        let stopwatch = Stopwatch.StartNew()
-        let actualDownloaded, actualFailed = Run.GetAll
-        stopwatch.Stop()
-        
+        let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
+            Run.GetAll
+
+        logReport (sprintf "Failed downloads: %i" actualFailed.Length)
+        logReport (sprintf "Successful downloads: %i" actualDownloaded.Length)
+        logReport (sprintf "Elapsed Seconds: %f" elapsedSeconds)
+
         test <@ actualDownloaded.Length = 16 @>
         test <@ actualFailed.Length = 0 @>
-        test <@ stopwatch.Elapsed.TotalSeconds > 1. @>
+        test <@ elapsedSeconds > 1. @>
