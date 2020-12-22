@@ -62,18 +62,17 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
 //    [<Fact(Skip="Slow running test - only include manually")>]
     [<Fact>]
     let ``Demo 3 - Async code`` () =
-        async {
-            let! { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
-                Run.GetAllAsync
+        let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
+            Run.GetAllAsync
+            |> Async.RunSynchronously
 
-            logReport (sprintf "Failed downloads: %i" actualFailed.Length)
-            logReport (sprintf "Successful downloads: %i" actualDownloaded.Length)
-            logReport (sprintf "Elapsed Seconds: %fs" elapsedSeconds)
+        logReport (sprintf "Failed downloads: %i" actualFailed.Length)
+        logReport (sprintf "Successful downloads: %i" actualDownloaded.Length)
+        logReport (sprintf "Elapsed Seconds: %fs" elapsedSeconds)
 
-            actualDownloaded
-            |> Array.iter (fun x -> logReport (sprintf "%A" x))
+        actualDownloaded
+        |> Array.iter (fun x -> logReport (sprintf "%A" x))
 
-            test <@ actualDownloaded.Length = 16 @>
-            test <@ actualFailed.Length = 0 @>
-            test <@ elapsedSeconds > 1. @>
-        }
+        test <@ actualDownloaded.Length = 16 @>
+        test <@ actualFailed.Length = 0 @>
+        test <@ elapsedSeconds > 1. @>

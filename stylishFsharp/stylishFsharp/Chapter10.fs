@@ -178,10 +178,9 @@ module Run =
     let GetAllAsync =
         async {
             let stopwatch = Stopwatch.StartNew()
-            let outcomes =
-                Download.GetOutcomesAsync uri pattern localPath
-                |> Async.RunSynchronously
+            let! outcomes = Download.GetOutcomesAsync uri pattern localPath
             stopwatch.Stop()
+
             let elapsedSeconds = stopwatch.Elapsed.TotalSeconds
             
             return { Outcomes = outcomes; ElapsedSeconds = elapsedSeconds }
