@@ -8,11 +8,9 @@ open System.Threading
 module Log =
     open System
     
-    let getThreadId = Thread.CurrentThread.ManagedThreadId
-
     let report (color : ConsoleColor) (message : string) =
         Console.ForegroundColor <- color
-        printfn "%s (thread ID: %i)" message getThreadId 
+        printfn "%s (thread ID: %i)" message Thread.CurrentThread.ManagedThreadId 
         Console.ResetColor()
         
     let red = report ConsoleColor.Red
@@ -34,6 +32,10 @@ module Outcome =
     let fileName = function
         | OK (fn, _, _) -> fn
         | Failed (fn, _, _) -> fn
+        
+    let threadId = function
+        | OK (_, _, t) -> t
+        | Failed (_, _, t) -> t
 
 module Download =
     open System
@@ -96,11 +98,11 @@ module Download =
         try
             client.DownloadFile(fileUri, filePath)
             Log.green (sprintf "%s - download complete" fileName)
-            Outcome.OK (fileName, (sprintf "%s - download complete" fileName), Log.getThreadId)
+            Outcome.OK (fileName, (sprintf "%s - download complete" fileName), Thread.CurrentThread.ManagedThreadId)
         with
         | e ->
             Log.red (sprintf "%s - error: %s" fileName e.Message)
-            Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message), Log.getThreadId)
+            Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message), Thread.CurrentThread.ManagedThreadId)
 
     let private tryDownloadAsync (localPath : string) (fileUri : Uri) =
         async {
@@ -114,11 +116,11 @@ module Download =
                     client.DownloadFileTaskAsync(fileUri, filePath)
                     |> Async.AwaitTask
                 Log.green (sprintf "%s - download complete" fileName)
-                return Outcome.OK (fileName, (sprintf "%s - download complete" fileName), Log.getThreadId)
+                return Outcome.OK (fileName, (sprintf "%s - download complete" fileName), Thread.CurrentThread.ManagedThreadId)
             with
             | e ->
                 Log.red (sprintf "%s - error: %s" fileName e.Message)
-                return Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message), Log.getThreadId)
+                return Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message), Thread.CurrentThread.ManagedThreadId)
         }
             
     let GetOutcomes (pageUri : Uri) (filePattern : string) (localPath : string) =

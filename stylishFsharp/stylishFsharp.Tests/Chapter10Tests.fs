@@ -2,8 +2,6 @@ module Chapter10Tests
 
 open System
 open System.Diagnostics
-open System.Threading
-
 open Swensen.Unquote
 open Xunit
 open Xunit.Abstractions
@@ -13,14 +11,17 @@ open Chapter10
 type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     let output = o 
 
-    let logReport message =
-        // TODO This is wrong: we need the thread id of the code being called, not the thread id of the unit test
-//        output.WriteLine (sprintf "%s (thread ID: %i)" message Thread.CurrentThread.ManagedThreadId)
-        output.WriteLine (sprintf "%s" message)
+    let logReport message = output.WriteLine (sprintf "%s" message)
     
+    let numberOfThreads outcomes =
+        outcomes
+            |> Array.filter Outcome.isOk
+            |> Array.map Outcome.threadId
+            |> Array.distinct
+            |> Array.length
+            
     [<Fact(Skip="Usage example of output.WriteLine")>]
-    let ``Output sample`` () =
-        output.WriteLine("Hello from test")
+    let ``Output sample`` () = output.WriteLine("Hello from test")
     
     [<Fact(Skip="Sample code from book, slightly adopted for testing; Slow running test - only include manually")>]
 //    [<Fact>]
@@ -46,7 +47,7 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     [<Fact>]
     let ``Demo 2 - Sync code`` () =
         let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
-            Run.GetAll
+            Run.GetAll // <- sync!
 
         logReport (sprintf "Failed downloads: %i" actualFailed.Length)
         logReport (sprintf "Successful downloads: %i" actualDownloaded.Length)
@@ -55,15 +56,17 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
         actualDownloaded
         |> Array.iter (fun x -> logReport (sprintf "%A" x))
 
-        test <@ actualDownloaded.Length = 16 @>
-        test <@ actualFailed.Length = 0 @>
-        test <@ elapsedSeconds > 1. @>
+        actualDownloaded.Length =! 16
+        actualFailed.Length =! 0
+        elapsedSeconds >! 1.
+        numberOfThreads actualDownloaded =! 1 // <- sync code only uses single thread
+
 
 //    [<Fact(Skip="Slow running test - only include manually")>]
     [<Fact>]
     let ``Demo 3 - Async code`` () =
         let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
-            Run.GetAllAsync
+            Run.GetAllAsync // <- async!
             |> Async.RunSynchronously
 
         logReport (sprintf "Failed downloads: %i" actualFailed.Length)
@@ -73,6 +76,7 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
         actualDownloaded
         |> Array.iter (fun x -> logReport (sprintf "%A" x))
 
-        test <@ actualDownloaded.Length = 16 @>
-        test <@ actualFailed.Length = 0 @>
-        test <@ elapsedSeconds > 1. @>
+        actualDownloaded.Length =! 16
+        actualFailed.Length =! 0
+        elapsedSeconds >! 1.
+        numberOfThreads actualDownloaded >! 1 // <- async code uses multiple threads
