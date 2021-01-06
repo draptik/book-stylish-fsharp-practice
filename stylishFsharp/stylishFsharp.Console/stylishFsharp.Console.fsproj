@@ -7,12 +7,18 @@
 
     <ItemGroup>
         <Compile Include="Chapter10.fs" />
+        <Compile Include="Chapter12.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
       <PackageReference Include="FSharp.Data" Version="3.3.3" />
       <PackageReference Include="FSharpx.Async" Version="1.14.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\stylishFsharp\stylishFsharp.fsproj" />
     </ItemGroup>
 
 </Project>
