@@ -147,7 +147,7 @@ module Exercises =
         let AsyncGetString (id : int) =
             // id is unused
             async {
-                do! Async.Sleep(500)
+                do! Async.Sleep(100)
                 return Random.string()
             }
             

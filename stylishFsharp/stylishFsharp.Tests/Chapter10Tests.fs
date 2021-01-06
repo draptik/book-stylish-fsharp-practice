@@ -45,7 +45,7 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
         let result = Exercises.Consumer.GetData 10
         result |> logReports
         
-        let expectedMinimalMilliseconds = 5000L
+        let expectedMinimalMilliseconds = 1000L
         stopWatch.ElapsedMilliseconds >! expectedMinimalMilliseconds
 
     [<Fact>]
