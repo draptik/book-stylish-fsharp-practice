@@ -163,9 +163,14 @@ type OutcomeResult = {
 
 module Run =
     open System
-    
+
+    // minor planets dataset    
     let uri = Uri @"https://minorplanetcenter.net/data"
     let pattern = @"neam.*\.json\.gz$"
+
+    // google n-grams dataset    
+//    let uri = Uri @"https://storage.googleapis.com/books/ngrams/books/datasetsv2.html"
+//    let pattern = @"eng\-1M\-2gram.*\.zip$"
     let localPath = ""
                         
     let GetAll =
