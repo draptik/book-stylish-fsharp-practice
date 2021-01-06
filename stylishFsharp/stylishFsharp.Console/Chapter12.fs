@@ -76,20 +76,44 @@ module InappropriateCollectionType =
         //        *)
 
         /// Listing 12-16                
+        //        let sample interval data =
+        //            [|
+        //                let max = (Array.length data) - 1
+        //                for i in 0..interval..max ->
+        //                    data.[i]
+        //            |]
+        //        (*
+        //            | Method |            Mean |         Error |        StdDev |  Gen 0 |  Gen 1 | Gen 2 | Allocated |
+        //            |------- |----------------:|--------------:|--------------:|-------:|-------:|------:|----------:|
+        //            |    Old | 1,327,013.16 us | 17,049.323 us | 15,947.947 us |      - |      - |     - |  33.91 KB |
+        //            |    New |        16.81 us |      0.229 us |      0.214 us | 3.9063 | 0.1221 |     - |   32.1 KB |
+        //            
+        //            - Even faster. NOTE: measurement time is now in microseconds (us=microseconds !), not milliseconds (ms) as before
+        //            - Pros: even less garbage collection        
+        //        *)
+            
+        /// Listing 12-18                
         let sample interval data =
             [|
-                let max = (Array.length data) - 1
-                for i in 0..interval..max ->
-                    data.[i]
+                let max =
+                    ( (data |> Array.length |> float) / (float interval)
+                      |> ceil
+                      |> int ) - 1
+                    
+                for i in 0..max ->
+                    data.[i * interval]
             |]
         (*
             | Method |            Mean |         Error |        StdDev |  Gen 0 |  Gen 1 | Gen 2 | Allocated |
             |------- |----------------:|--------------:|--------------:|-------:|-------:|------:|----------:|
-            |    Old | 1,327,013.16 us | 17,049.323 us | 15,947.947 us |      - |      - |     - |  33.91 KB |
-            |    New |        16.81 us |      0.229 us |      0.214 us | 3.9063 | 0.1221 |     - |   32.1 KB |
+            |    Old | 1,338,237.43 us | 16,953.601 us | 15,858.409 us |      - |      - |     - |  33.91 KB |
+            |    New |        15.23 us |      0.125 us |      0.111 us | 3.9215 | 0.1373 |     - |  32.09 KB |
             
-            - Even faster. NOTE: measurement time is now in microseconds (us=microseconds !), not milliseconds (ms) as before
-            - Pros: even less garbage collection        
+            - Similar to previous result from listing 12-16
+            - Cons:
+                - lowers "motivational transparency" of the code, by making it a little less obvious what the author was intending to do
+                - micro-optimization (architecture / compiler)
+                - more risk, because code has complicated calculation with potential of-by-one error        
         *)
             
 module Harness =
