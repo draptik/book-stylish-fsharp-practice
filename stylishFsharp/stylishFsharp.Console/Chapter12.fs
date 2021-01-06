@@ -1,6 +1,7 @@
 module stylishFsharp.Console.Chapter12
 
 open System
+open System.Drawing
 open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
 
@@ -115,11 +116,57 @@ module InappropriateCollectionType =
                 - micro-optimization (architecture / compiler)
                 - more risk, because code has complicated calculation with potential of-by-one error        
         *)
+
+module ShortTermObjects =
+    
+    type Point3d(x : float, y : float, z : float) =
+        member __.X = x
+        member __.Y = y
+        member __.Z = z
+        member val Description = "" with get, set
+        member this.DistanceFrom(that : Point3d) =
+            (that.X - this.X) ** 2. +
+            (that.Y - this.Y) ** 2. +
+            (that.Z - this.Y) ** 2.
+            |> sqrt
+        override this.ToString() =
+            sprintf "X: %f, Y: %f, Z: %f" this.X this.Y this.Z
+
+    type Float3 = (float * float * float)
+    
+    module Old =
+        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+            let here = Point3d(here)
+            coords
+            |> Array.map Point3d
+            |> Array.filter (fun there ->
+                there.DistanceFrom(here) <= radius)
+            |> Array.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
+    
+    module New =
+        
+        /// Listing 12.22
+        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+            let here = Point3d(here)
+            coords
+            |> Array.map Point3d
+            |> Array.filter (fun there ->
+                there.DistanceFrom(here) <= radius)
+            |> Array.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
+        (*
+            | Method |     Mean |   Error |  StdDev |     Gen 0 |     Gen 1 |    Gen 2 | Allocated |
+            |------- |---------:|--------:|--------:|----------:|----------:|---------:|----------:|
+            |    Old | 146.1 ms | 1.74 ms | 1.62 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+            |    New | 145.4 ms | 2.17 ms | 2.03 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+
+            - Baseline (New == Old)
+        *)
+            
             
 module Harness =
     
     [<MemoryDiagnoser>]
-    type Harness() =
+    type HarnessInappropriateCollectionType() =
 
         let r = Random()
         let list = List.init 1_000_000 (fun _ -> r.NextDouble())
@@ -138,8 +185,37 @@ module Harness =
             |> Array.ofSeq
             |> ignore
 
-let runChapter12 () =
-    BenchmarkRunner.Run<Harness.Harness>()
+    [<MemoryDiagnoser>]
+    type HarnessShortTermObjects() =
+
+        let r = Random(1)
+        let coords =
+            Array.init 1_000_000 (fun _ ->
+                r.NextDouble(), r.NextDouble(), r.NextDouble())
+        let here = (0., 0., 0.)
+        
+        [<Benchmark>]
+        member __.Old() =
+            coords
+            |> ShortTermObjects.Old.withinRadius 0.1 here
+            |> ignore
+        
+        [<Benchmark>]
+        member __.New() =
+            coords
+            |> ShortTermObjects.New.withinRadius 0.1 here
+            |> ignore
+
+let runChapter12_Case1_InappropriateCollectionType () =
+    BenchmarkRunner.Run<Harness.HarnessInappropriateCollectionType>()
     |> printfn "%A"
     
     Console.ReadKey() |> ignore
+    
+let runChapter12_Case2_ShortTermObjects () =
+    BenchmarkRunner.Run<Harness.HarnessShortTermObjects>()
+    |> printfn "%A"
+    
+    Console.ReadKey() |> ignore
+    
+    
