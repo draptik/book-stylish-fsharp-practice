@@ -92,17 +92,19 @@ module Download =
     /// Download all the files linked to in the specified webpage, whose
     /// link path matches the specified regular expression, to the specified
     /// local path. Return a tuple of succeeded and failed file names.
-    let AsyncGetFiles (pageUri : Uri) (filePattern : string) (localPath : string) =
+    let AsyncGetFilesBatched (pageUri : Uri) (filePattern : string) (localPath : string) (batchSize : int) =
         async {
             let! links = getLinks pageUri filePattern
             
-            let! downloadResults =
+            let downloaded, failed =
                 links
                 |> Seq.map (tryDownload localPath)
-                |> Async.Parallel
-                
-            let downloaded, failed =
-                downloadResults
+                |> Seq.chunkBySize batchSize
+                |> Seq.collect (fun batch ->
+                    batch
+                    |> Async.Parallel
+                    |> Async.RunSynchronously)
+                |> Array.ofSeq
                 |> Array.partition Outcome.isOk
 
             return                
@@ -127,7 +129,7 @@ let main argv =
     sw.Start()
     
     let downloaded, failed =
-        Download.AsyncGetFiles uri pattern localPath
+        Download.AsyncGetFilesBatched uri pattern localPath 4
         |> Async.RunSynchronously
         
     failed
