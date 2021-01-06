@@ -163,21 +163,44 @@ module ShortTermObjects =
         //        *)
         
         /// Listing 12.25
+        //        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+        //            let here = Point3d(here)
+        //            coords
+        //            |> Seq.map Point3d
+        //            |> Seq.filter (fun there ->
+        //                there.DistanceFrom(here) <= radius)
+        //            |> Seq.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
+        //            |> Seq.toArray
+        //        (*
+        //            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 | Allocated |
+        //            |------- |----------:|---------:|---------:|----------:|----------:|---------:|----------:|
+        //            |    Old | 145.71 ms | 2.456 ms | 2.297 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+        //            |    New |  88.19 ms | 0.432 ms | 0.337 ms | 5666.6667 |  333.3333 |        - |  46.16 MB |
+        //
+        //            - Using Seq instead of Array: Only slightly faster
+        //        *)
+        
+        /// Listing 12.27
         let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
-            let here = Point3d(here)
+            let distance (p1 : float*float*float) (p2 : float*float*float) =
+                let x1, y1, z1 = p1
+                let x2, y2, z2 = p2
+                (x1 - x2) ** 2. +
+                (y1 - y2) ** 2. +
+                (z1 - z2) ** 2.
+                |> sqrt
             coords
-            |> Seq.map Point3d
-            |> Seq.filter (fun there ->
-                there.DistanceFrom(here) <= radius)
-            |> Seq.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
-            |> Seq.toArray
+            |> Array.filter (fun there ->
+                distance here there <= radius)
         (*
-            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 | Allocated |
-            |------- |----------:|---------:|---------:|----------:|----------:|---------:|----------:|
-            |    Old | 145.71 ms | 2.456 ms | 2.297 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
-            |    New |  88.19 ms | 0.432 ms | 0.337 ms | 5666.6667 |  333.3333 |        - |  46.16 MB |
+            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
+            |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
+            |    Old | 145.47 ms | 2.520 ms | 2.357 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.01 KB |
+            |    New |  57.91 ms | 0.463 ms | 0.410 ms |         - |         - |        - |   126.41 KB |
 
-            - Using Seq instead of Array: Only slightly faster
+            - Pros:
+                - faster
+                - no garbage collection
         *)
             
 module Harness =
