@@ -1,5 +1,6 @@
 module Chapter10Tests
 
+open System.Diagnostics
 open Swensen.Unquote
 open Xunit
 open Xunit.Abstractions
@@ -18,8 +19,8 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
             |> Array.distinct
             |> Array.length
 
-//    [<Fact(Skip="Slow running test - only include manually")>]
-    [<Fact>]
+    [<Fact(Skip="Slow running test - only include manually")>]
+//    [<Fact>]
     let ``Async code with throttle`` () =
         let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
             Run.GetAllAsync // <- async!
@@ -36,3 +37,24 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
         actualFailed.Length =! 0
         elapsedSeconds >! 1.
         numberOfThreads actualDownloaded >! 1 // <- async code uses multiple threads
+
+    [<Fact>]
+    let ``Exercise 10-1: Making some code asynchronous 1. sync example`` () =
+        let stopWatch = Stopwatch.StartNew()
+        let result = Exercise10_01.Consumer.GetData 10
+        result
+        |> Array.iter (fun x -> logReport(sprintf "%s" x))
+        stopWatch.ElapsedMilliseconds >! 5000L
+
+//    [<Fact>]
+//    let ``Exercise 10-1: Making some code asynchronous 2. async solution`` () =
+//        let stopWatch = Stopwatch.StartNew()
+//        let result =
+//            async {
+//                let! s = Exercise10_01.Consumer.AsyncGetData 10
+//                return s
+//            }
+//        
+//        result
+//        |> Array.iter (fun x -> logReport(sprintf "%s" x))
+//        stopWatch.ElapsedMilliseconds >! 5000L
