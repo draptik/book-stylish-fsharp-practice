@@ -59,20 +59,37 @@ module InappropriateCollectionType =
         //        *)
 
         /// Listing 12-13                
+        //        let sample interval data =
+        //            data
+        //            |> Seq.indexed
+        //            |> Seq.filter (fun (i, _) ->
+        //                i % interval = 0)
+        //            |> Seq.map snd
+        //        (*
+        //            | Method |        Mean |     Error |    StdDev |     Gen 0 |   Gen 1 | Gen 2 |   Allocated |
+        //            |------- |------------:|----------:|----------:|----------:|--------:|------:|------------:|
+        //            |    Old | 1,311.84 ms | 13.723 ms | 12.165 ms |         - |       - |     - |    35.68 KB |
+        //            |    New |    24.09 ms |  0.470 ms |  0.393 ms | 3812.5000 | 31.2500 |     - | 31274.59 KB |
+        //            
+        //            - Even faster
+        //            - Pros: less garbage collection (the book only has Gen 0, don't know why there is GC-Gen1 here)
+        //        *)
+
+        /// Listing 12-16                
         let sample interval data =
-            data
-            |> Seq.indexed
-            |> Seq.filter (fun (i, _) ->
-                i % interval = 0)
-            |> Seq.map snd
+            [|
+                let max = (Array.length data) - 1
+                for i in 0..interval..max ->
+                    data.[i]
+            |]
         (*
-            | Method |        Mean |     Error |    StdDev |     Gen 0 |   Gen 1 | Gen 2 |   Allocated |
-            |------- |------------:|----------:|----------:|----------:|--------:|------:|------------:|
-            |    Old | 1,311.84 ms | 13.723 ms | 12.165 ms |         - |       - |     - |    35.68 KB |
-            |    New |    24.09 ms |  0.470 ms |  0.393 ms | 3812.5000 | 31.2500 |     - | 31274.59 KB |
+            | Method |            Mean |         Error |        StdDev |  Gen 0 |  Gen 1 | Gen 2 | Allocated |
+            |------- |----------------:|--------------:|--------------:|-------:|-------:|------:|----------:|
+            |    Old | 1,327,013.16 us | 17,049.323 us | 15,947.947 us |      - |      - |     - |  33.91 KB |
+            |    New |        16.81 us |      0.229 us |      0.214 us | 3.9063 | 0.1221 |     - |   32.1 KB |
             
-            - Even faster
-            - Pros: less garbage collection (the book only has Gen 0, don't know why there is GC-Gen1 here)
+            - Even faster. NOTE: measurement time is now in microseconds (us=microseconds !), not milliseconds (ms) as before
+            - Pros: even less garbage collection        
         *)
             
 module Harness =
@@ -82,6 +99,7 @@ module Harness =
 
         let r = Random()
         let list = List.init 1_000_000 (fun _ -> r.NextDouble())
+        let array = list |> Array.ofList
         
         [<Benchmark>]
         member __.Old() =
@@ -91,7 +109,7 @@ module Harness =
         
         [<Benchmark>]
         member __.New() =
-            list
+            array
             |> InappropriateCollectionType.New.sample 1000
             |> Array.ofSeq
             |> ignore
