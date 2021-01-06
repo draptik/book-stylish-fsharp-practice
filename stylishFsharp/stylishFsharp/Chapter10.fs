@@ -133,7 +133,7 @@ module Run =
             return { Outcomes = outcomes; ElapsedSeconds = elapsedSeconds }
         }
 
-module Exercise10_01 =
+module Exercises =
     open System
     
     module Random =
@@ -169,4 +169,9 @@ module Exercise10_01 =
                     strings
                     |> Array.sort
             }
-            
+
+        /// Returns a C# Task (instead of an F# Async)
+        let GetDataAsync (count : int) =
+            count
+            |> AsyncGetData
+            |> Async.StartAsTask

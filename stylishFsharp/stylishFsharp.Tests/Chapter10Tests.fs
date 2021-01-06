@@ -42,7 +42,7 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     [<Fact>]
     let ``Exercise 10-1: Making some code asynchronous 1. sync example`` () =
         let stopWatch = Stopwatch.StartNew()
-        let result = Exercise10_01.Consumer.GetData 10
+        let result = Exercises.Consumer.GetData 10
         result |> logReports
         
         let expectedMinimalMilliseconds = 5000L
@@ -51,7 +51,16 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     [<Fact>]
     let ``Exercise 10-1: Making some code asynchronous 2. async solution`` () =
         let stopWatch = Stopwatch.StartNew()
-        let result = Exercise10_01.Consumer.AsyncGetData 10 |> Async.RunSynchronously
+        let result = Exercises.Consumer.AsyncGetData 10 |> Async.RunSynchronously
+        result |> logReports
+        
+        let expectedMaximumMilliseconds = 1000L
+        stopWatch.ElapsedMilliseconds <! expectedMaximumMilliseconds
+
+    [<Fact>]
+    let ``Exercise 10-2: Returning C# Tasks`` () =
+        let stopWatch = Stopwatch.StartNew()
+        let result = Exercises.Consumer.GetDataAsync 10 |> Async.AwaitTask |> Async.RunSynchronously
         result |> logReports
         
         let expectedMaximumMilliseconds = 1000L
