@@ -42,20 +42,37 @@ module InappropriateCollectionType =
         //        *)
 
         /// Listing 12-10                
+        //        let sample interval data =
+        //            data
+        //            |> Array.indexed
+        //            |> Array.filter (fun (i, _) ->
+        //                i % interval = 0)
+        //            |> Array.map snd
+        //        (*
+        //            | Method |        Mean |     Error |    StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
+        //            |------- |------------:|----------:|----------:|----------:|----------:|---------:|------------:|
+        //            |    Old | 1,320.65 ms | 13.895 ms | 12.997 ms |         - |         - |        - |    33.91 KB |
+        //            |    New |    73.67 ms |  1.065 ms |  0.996 ms | 4428.5714 | 2571.4286 | 714.2857 | 39201.71 KB |
+        //            
+        //            - Using Array instead of List
+        //            - same Pros and Cons as before
+        //        *)
+
+        /// Listing 12-13                
         let sample interval data =
             data
-            |> Array.indexed
-            |> Array.filter (fun (i, _) ->
+            |> Seq.indexed
+            |> Seq.filter (fun (i, _) ->
                 i % interval = 0)
-            |> Array.map snd
+            |> Seq.map snd
         (*
-            | Method |        Mean |     Error |    StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
-            |------- |------------:|----------:|----------:|----------:|----------:|---------:|------------:|
-            |    Old | 1,320.65 ms | 13.895 ms | 12.997 ms |         - |         - |        - |    33.91 KB |
-            |    New |    73.67 ms |  1.065 ms |  0.996 ms | 4428.5714 | 2571.4286 | 714.2857 | 39201.71 KB |
+            | Method |        Mean |     Error |    StdDev |     Gen 0 |   Gen 1 | Gen 2 |   Allocated |
+            |------- |------------:|----------:|----------:|----------:|--------:|------:|------------:|
+            |    Old | 1,311.84 ms | 13.723 ms | 12.165 ms |         - |       - |     - |    35.68 KB |
+            |    New |    24.09 ms |  0.470 ms |  0.393 ms | 3812.5000 | 31.2500 |     - | 31274.59 KB |
             
-            - Using Array instead of List
-            - same Pros and Cons as before
+            - Even faster
+            - Pros: less garbage collection (the book only has Gen 0, don't know why there is GC-Gen1 here)
         *)
             
 module Harness =
@@ -65,7 +82,6 @@ module Harness =
 
         let r = Random()
         let list = List.init 1_000_000 (fun _ -> r.NextDouble())
-        let array = list |> Array.ofList
         
         [<Benchmark>]
         member __.Old() =
@@ -75,8 +91,9 @@ module Harness =
         
         [<Benchmark>]
         member __.New() =
-            array
+            list
             |> InappropriateCollectionType.New.sample 1000
+            |> Array.ofSeq
             |> ignore
 
 let runChapter12 () =
