@@ -181,26 +181,48 @@ module ShortTermObjects =
         //        *)
         
         /// Listing 12.27
+        //        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+        //            let distance (p1 : float*float*float) (p2 : float*float*float) =
+        //                let x1, y1, z1 = p1
+        //                let x2, y2, z2 = p2
+        //                (x1 - x2) ** 2. +
+        //                (y1 - y2) ** 2. +
+        //                (z1 - z2) ** 2.
+        //                |> sqrt
+        //            coords
+        //            |> Array.filter (fun there ->
+        //                distance here there <= radius)
+        //        (*
+        //            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
+        //            |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
+        //            |    Old | 145.47 ms | 2.520 ms | 2.357 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.01 KB |
+        //            |    New |  57.91 ms | 0.463 ms | 0.410 ms |         - |         - |        - |   126.41 KB |
+        //
+        //            - Pros:
+        //                - faster
+        //                - no garbage collection
+        //        *)
+        
+        /// Listing 12.29
         let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
-            let distance (p1 : float*float*float) (p2 : float*float*float) =
-                let x1, y1, z1 = p1
-                let x2, y2, z2 = p2
+            let distance x1 y1 z1 x2 y2 z2 =
                 (x1 - x2) ** 2. +
                 (y1 - y2) ** 2. +
                 (z1 - z2) ** 2.
                 |> sqrt
+                
+            let x1, y1, z1 = here
+
             coords
-            |> Array.filter (fun there ->
-                distance here there <= radius)
+            |> Array.filter (fun (x2, y2, z2) ->
+                distance x1 y1 z1 x2 y2 z2 <= radius)
         (*
             | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
             |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
-            |    Old | 145.47 ms | 2.520 ms | 2.357 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.01 KB |
-            |    New |  57.91 ms | 0.463 ms | 0.410 ms |         - |         - |        - |   126.41 KB |
+            |    Old | 143.54 ms | 1.442 ms | 1.204 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.24 KB |
+            |    New |  63.67 ms | 1.236 ms | 1.773 ms |         - |         - |        - |   126.35 KB |
 
-            - Pros:
-                - faster
-                - no garbage collection
+            - no benefit compared to previous solution (12.27)
         *)
             
 module Harness =
