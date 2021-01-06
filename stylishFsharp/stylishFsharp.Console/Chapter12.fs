@@ -146,22 +146,39 @@ module ShortTermObjects =
     module New =
         
         /// Listing 12.22
+        //        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+        //            let here = Point3d(here)
+        //            coords
+        //            |> Array.map Point3d
+        //            |> Array.filter (fun there ->
+        //                there.DistanceFrom(here) <= radius)
+        //            |> Array.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
+        //        (*
+        //            | Method |     Mean |   Error |  StdDev |     Gen 0 |     Gen 1 |    Gen 2 | Allocated |
+        //            |------- |---------:|--------:|--------:|----------:|----------:|---------:|----------:|
+        //            |    Old | 146.1 ms | 1.74 ms | 1.62 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+        //            |    New | 145.4 ms | 2.17 ms | 2.03 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+        //
+        //            - Baseline (New == Old)
+        //        *)
+        
+        /// Listing 12.25
         let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
             let here = Point3d(here)
             coords
-            |> Array.map Point3d
-            |> Array.filter (fun there ->
+            |> Seq.map Point3d
+            |> Seq.filter (fun there ->
                 there.DistanceFrom(here) <= radius)
-            |> Array.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
+            |> Seq.map (fun p3d -> p3d.X, p3d.Y, p3d.Z)
+            |> Seq.toArray
         (*
-            | Method |     Mean |   Error |  StdDev |     Gen 0 |     Gen 1 |    Gen 2 | Allocated |
-            |------- |---------:|--------:|--------:|----------:|----------:|---------:|----------:|
-            |    Old | 146.1 ms | 1.74 ms | 1.62 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
-            |    New | 145.4 ms | 2.17 ms | 2.03 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 | Allocated |
+            |------- |----------:|---------:|---------:|----------:|----------:|---------:|----------:|
+            |    Old | 145.71 ms | 2.456 ms | 2.297 ms | 6500.0000 | 3500.0000 | 750.0000 |  53.83 MB |
+            |    New |  88.19 ms | 0.432 ms | 0.337 ms | 5666.6667 |  333.3333 |        - |  46.16 MB |
 
-            - Baseline (New == Old)
+            - Using Seq instead of Array: Only slightly faster
         *)
-            
             
 module Harness =
     
