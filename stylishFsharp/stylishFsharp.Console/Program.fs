@@ -6,10 +6,13 @@ module Log =
     open System.Threading
     
     /// Print a colored log message
-    let report (color : ConsoleColor) (message : string) =
-        Console.ForegroundColor <- color
-        printfn "%s (thread ID: %i)" message Thread.CurrentThread.ManagedThreadId
-        Console.ResetColor()
+    let report =
+        let lockObj = obj()
+        fun (color : ConsoleColor) (message : string) ->
+            lock lockObj (fun _ ->
+                Console.ForegroundColor <- color
+                printfn "%s (thread ID: %i)" message Thread.CurrentThread.ManagedThreadId
+                Console.ResetColor())
         
     let red = report ConsoleColor.Red
     let green = report ConsoleColor.Green
@@ -48,58 +51,75 @@ module Download =
     
     /// Get the URLs of all links in a specified page matching a specified regex pattern.
     let private getLinks (pageUri : Uri) (filePattern : string) =
-        Log.cyan "Getting names..."
-        let re = Regex(filePattern)
-        let html = HtmlDocument.Load(pageUri.AbsoluteUri)
-        
-        let links =
-            html.Descendants ["a"]
-            |> Seq.choose (fun node ->
-                node.TryGetAttribute("href")
-                |> Option.map (fun att -> att.Value()))
-            |> Seq.filter (re.IsMatch)
-            |> Seq.map (absoluteUri pageUri)
-            |> Seq.distinct
-            |> Array.ofSeq
+        async {
+            Log.cyan "Getting names..."
+            let re = Regex(filePattern)
             
-        links
+            // val html : Async<HtmlDocument>
+            let! html = HtmlDocument.AsyncLoad(pageUri.AbsoluteUri)
+            
+            let links =
+                html.Descendants ["a"]
+                |> Seq.choose (fun node ->
+                    node.TryGetAttribute("href")
+                    |> Option.map (fun att -> att.Value()))
+                |> Seq.filter (re.IsMatch)
+                |> Seq.map (absoluteUri pageUri)
+                |> Seq.distinct
+                |> Array.ofSeq
+                
+            return links
+        }
         
     /// Download a file to the specified local path
     let private tryDownload (localPath : string) (fileUri : Uri) =
-        let fileName = fileUri.Segments |> Array.last
-        Log.yellow (sprintf "%s - starting download" fileName)
-        let filePath = Path.Combine(localPath, fileName)
-        
-        use client = new WebClient()
-        try
-            client.DownloadFile(fileUri, filePath)
-            Log.green (sprintf "%s - download complete" fileName)
-            Outcome.OK fileName
-        with
-        | e ->
-            Log.red (sprintf "%s - error: %s" fileName e.Message)
-            Outcome.Failed fileName
+        async {
+            let fileName = fileUri.Segments |> Array.last
+            Log.yellow (sprintf "%s - starting download" fileName)
+            let filePath = Path.Combine(localPath, fileName)
+            
+            use client = new WebClient()
+            try
+                do! client.DownloadFileTaskAsync(fileUri, filePath) |> Async.AwaitTask
+                Log.green (sprintf "%s - download complete" fileName)
+                return Outcome.OK fileName
+            with
+            | e ->
+                Log.red (sprintf "%s - error: %s" fileName e.Message)
+                return Outcome.Failed fileName
+        }
             
     /// Download all the files linked to in the specified webpage, whose
     /// link path matches the specified regular expression, to the specified
     /// local path. Return a tuple of succeeded and failed file names.
-    let GetFiles (pageUri : Uri) (filePattern : string) (localPath : string) =
-        let links = getLinks pageUri filePattern
-        
-        let downloaded, failed =
-            links
-            |> Array.map (tryDownload localPath)
-            |> Array.partition Outcome.isOk
+    let AsyncGetFiles (pageUri : Uri) (filePattern : string) (localPath : string) =
+        async {
+            let! links = getLinks pageUri filePattern
             
-        downloaded |> Array.map Outcome.filename,
-        failed |> Array.map Outcome.filename
+            let! downloadResults =
+                links
+                |> Seq.map (tryDownload localPath)
+                |> Async.Parallel
+                
+            let downloaded, failed =
+                downloadResults
+                |> Array.partition Outcome.isOk
+
+            return                
+                downloaded |> Array.map Outcome.filename,
+                failed |> Array.map Outcome.filename
+        }
 
 [<EntryPoint>]
 let main argv =
     
     // Some minor planets data:
-    let uri = Uri @"https://minorplanetcenter.net/data"
-    let pattern = @"neam.*\.json\.gz$"
+//    let uri = Uri @"https://minorplanetcenter.net/data"
+//    let pattern = @"neam.*\.json\.gz$"
+    
+    // Large dataset (~13GB)
+    let uri = Uri @"https://storage.googleapis.com/books/ngrams/books/datasetsv2.html"
+    let pattern = @"eng\-1M\-2gram.*\.zip$"
     
     let localPath = "/home/patrick/tmp/downloads"
     
@@ -107,7 +127,8 @@ let main argv =
     sw.Start()
     
     let downloaded, failed =
-        Download.GetFiles uri pattern localPath
+        Download.AsyncGetFiles uri pattern localPath
+        |> Async.RunSynchronously
         
     failed
     |> Array.iter (fun fn ->
