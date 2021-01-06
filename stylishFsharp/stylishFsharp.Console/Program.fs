@@ -1,7 +1,4 @@
-﻿open System
-open System.Diagnostics
-
-module Log =
+﻿module Log =
     open System
     open System.Threading
     
@@ -39,6 +36,8 @@ module Download =
     open System.Text.RegularExpressions
     // From Nuget package "FSharp.Data"
     open FSharp.Data
+    // From Nuget package "FSharpx.Async"
+    open FSharpx.Control
     
     let private absoluteUri (pageUri : Uri) (filePath : string) =
         if filePath.StartsWith("http:") || filePath.StartsWith("https:") then
@@ -92,19 +91,17 @@ module Download =
     /// Download all the files linked to in the specified webpage, whose
     /// link path matches the specified regular expression, to the specified
     /// local path. Return a tuple of succeeded and failed file names.
-    let AsyncGetFilesBatched (pageUri : Uri) (filePattern : string) (localPath : string) (batchSize : int) =
+    let AsyncGetFilesThrottled (pageUri : Uri) (filePattern : string) (localPath : string) (throttle : int) =
         async {
             let! links = getLinks pageUri filePattern
             
-            let downloaded, failed =
+            let! downloadResults =
                 links
                 |> Seq.map (tryDownload localPath)
-                |> Seq.chunkBySize batchSize
-                |> Seq.collect (fun batch ->
-                    batch
-                    |> Async.Parallel
-                    |> Async.RunSynchronously)
-                |> Array.ofSeq
+                |> Async.ParallelWithThrottle throttle
+                
+            let downloaded, failed =
+                downloadResults
                 |> Array.partition Outcome.isOk
 
             return                
@@ -112,12 +109,14 @@ module Download =
                 failed |> Array.map Outcome.filename
         }
 
+open System
+open System.Diagnostics
+
 [<EntryPoint>]
 let main argv =
-    
     // Some minor planets data:
-//    let uri = Uri @"https://minorplanetcenter.net/data"
-//    let pattern = @"neam.*\.json\.gz$"
+    //    let uri = Uri @"https://minorplanetcenter.net/data"
+    //    let pattern = @"neam.*\.json\.gz$"
     
     // Large dataset (~13GB)
     let uri = Uri @"https://storage.googleapis.com/books/ngrams/books/datasetsv2.html"
@@ -129,7 +128,7 @@ let main argv =
     sw.Start()
     
     let downloaded, failed =
-        Download.AsyncGetFilesBatched uri pattern localPath 4
+        Download.AsyncGetFilesThrottled uri pattern localPath 4
         |> Async.RunSynchronously
         
     failed
@@ -140,5 +139,4 @@ let main argv =
                   downloaded.Length sw.Elapsed.TotalSeconds failed.Length)
     
     Console.ReadKey() |> ignore
-    
     0
