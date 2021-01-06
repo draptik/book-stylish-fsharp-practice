@@ -43,8 +43,8 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
         
         logReport (sprintf "%i files downloaded in %0.1fs, %i failed. Press any key" downloaded.Length sw.Elapsed.TotalSeconds failed.Length)
 
-//    [<Fact(Skip="Slow running test - only include manually")>]
-    [<Fact>]
+    [<Fact(Skip="Slow running test - only include manually")>]
+//    [<Fact>]
     let ``Demo 2 - Sync code`` () =
         let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
             Run.GetAll // <- sync!
@@ -62,8 +62,8 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
         numberOfThreads actualDownloaded =! 1 // <- sync code only uses single thread
 
 
-//    [<Fact(Skip="Slow running test - only include manually")>]
-    [<Fact>]
+    [<Fact(Skip="Slow running test - only include manually")>]
+//    [<Fact>]
     let ``Demo 3 - Async code`` () =
         let { Outcomes = actualDownloaded, actualFailed; ElapsedSeconds = elapsedSeconds } =
             Run.GetAllAsync // <- async!
