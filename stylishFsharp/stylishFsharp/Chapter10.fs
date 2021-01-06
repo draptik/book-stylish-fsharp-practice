@@ -4,7 +4,6 @@ open System.Diagnostics
 open System.IO
 open System.Threading
 
-
 module Log =
     open System
     
@@ -43,7 +42,9 @@ module Download =
     open System.Text.RegularExpressions
     // NuGet package FSharp.Data
     open FSharp.Data
-    
+    // From Nuget package "FSharpx.Async"
+    open FSharpx.Control
+
     let private absoluteUri (pageUri : Uri) (filePath : string) =
         if filePath.StartsWith("http:") || filePath.StartsWith("https:") then
             Uri(filePath)
@@ -52,25 +53,8 @@ module Download =
             filePath.TrimStart(sep)
             |> (sprintf "%O%c%s" pageUri sep)
             |> Uri
-    
+ 
     let private getLinks (pageUri : Uri) (filePattern : string) =
-        Log.cyan "Getting names..."
-        let re = Regex(filePattern)
-        let html = HtmlDocument.Load(pageUri.AbsoluteUri)
-        
-        let links =
-            html.Descendants ["a"]
-            |> Seq.choose (fun node ->
-                node.TryGetAttribute("href")
-                |> Option.map (fun att -> att.Value()))
-            |> Seq.filter (re.IsMatch)
-            |> Seq.map (absoluteUri pageUri)
-            |> Seq.distinct
-            |> Array.ofSeq
-            
-        links
-        
-    let private getLinksAsync (pageUri : Uri) (filePattern : string) =
         async {
             Log.cyan "Getting names..."
             let re = Regex(filePattern)
@@ -88,23 +72,8 @@ module Download =
                 
             return links
         }
-    
-    let private tryDownload (localPath : string) (fileUri : Uri) =
-        let fileName = fileUri.Segments |> Array.last
-        Log.yellow (sprintf "%s - starting download" fileName)
-        let filePath = Path.Combine(localPath, fileName)
-        
-        use client = new WebClient()
-        try
-            client.DownloadFile(fileUri, filePath)
-            Log.green (sprintf "%s - download complete" fileName)
-            Outcome.OK (fileName, (sprintf "%s - download complete" fileName), Thread.CurrentThread.ManagedThreadId)
-        with
-        | e ->
-            Log.red (sprintf "%s - error: %s" fileName e.Message)
-            Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message), Thread.CurrentThread.ManagedThreadId)
 
-    let private tryDownloadAsync (localPath : string) (fileUri : Uri) =
+    let private tryDownload (localPath : string) (fileUri : Uri) =
         async {
             let fileName = fileUri.Segments |> Array.last
             Log.yellow (sprintf "%s - starting download" fileName)
@@ -122,38 +91,18 @@ module Download =
                 Log.red (sprintf "%s - error: %s" fileName e.Message)
                 return Outcome.Failed (fileName, (sprintf "%s - error: %s" fileName e.Message), Thread.CurrentThread.ManagedThreadId)
         }
-            
-    let GetOutcomes (pageUri : Uri) (filePattern : string) (localPath : string) =
-        let links = getLinks pageUri filePattern
-        let downloaded, failed =
-            links
-            |> Array.map (tryDownload localPath)
-            |> Array.partition Outcome.isOk
-        downloaded, failed
 
-    let GetOutcomesAsync (pageUri : Uri) (filePattern : string) (localPath : string) =
+    let AsyncGetOutcomes (pageUri : Uri) (filePattern : string) (localPath : string) (throttle : int) =
         async {
-            let! links = getLinksAsync pageUri filePattern
+            let! links = getLinks pageUri filePattern
             let! downloadResults =
                 links
-                |> Seq.map (tryDownloadAsync localPath)
-                |> Async.Parallel
+                |> Seq.map (tryDownload localPath)
+                |> Async.ParallelWithThrottle throttle
             let downloaded, failed =
                 downloadResults
                 |> Array.partition Outcome.isOk
             return downloaded, failed
-        }
-            
-    let GetFiles (pageUri : Uri) (filePattern : string) (localPath : string) =
-        let downloaded, failed = GetOutcomes pageUri filePattern localPath
-        downloaded |> Array.map Outcome.fileName,
-        failed |> Array.map Outcome.fileName
-
-    let GetFilesAsync (pageUri : Uri) (filePattern : string) (localPath : string) =
-        async {
-            let! downloaded, failed = GetOutcomesAsync pageUri filePattern localPath
-            return downloaded |> Array.map Outcome.fileName,
-                failed |> Array.map Outcome.fileName
         }
 
 type OutcomeResult = {
@@ -164,28 +113,19 @@ type OutcomeResult = {
 module Run =
     open System
 
-    // minor planets dataset    
+    /// small dataset: minor planets dataset    
     let uri = Uri @"https://minorplanetcenter.net/data"
     let pattern = @"neam.*\.json\.gz$"
 
-    // google n-grams dataset    
-//    let uri = Uri @"https://storage.googleapis.com/books/ngrams/books/datasetsv2.html"
-//    let pattern = @"eng\-1M\-2gram.*\.zip$"
+    /// large dataset (13GB): google n-grams dataset    
+    //    let uri = Uri @"https://storage.googleapis.com/books/ngrams/books/datasetsv2.html"
+    //    let pattern = @"eng\-1M\-2gram.*\.zip$"
     let localPath = ""
-                        
-    let GetAll =
-        let stopwatch = Stopwatch.StartNew()
-        let outcomes = Download.GetOutcomes uri pattern localPath
-        stopwatch.Stop()
-        let elapsedSeconds = stopwatch.Elapsed.TotalSeconds
-        
-        { Outcomes = outcomes 
-          ElapsedSeconds = elapsedSeconds }
-                        
+                   
     let GetAllAsync =
         async {
             let stopwatch = Stopwatch.StartNew()
-            let! outcomes = Download.GetOutcomesAsync uri pattern localPath
+            let! outcomes = Download.AsyncGetOutcomes uri pattern localPath 4
             stopwatch.Stop()
 
             let elapsedSeconds = stopwatch.Elapsed.TotalSeconds
