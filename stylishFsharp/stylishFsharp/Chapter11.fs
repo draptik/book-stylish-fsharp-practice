@@ -37,7 +37,7 @@ module Exercise11_02 =
         Data : float[]
     }
     
-    let log s = printfn "Logging: %s" s
+    let log s = sprintf "Logging: %s" s
     
     type MessageError =
         | InvalidFileName of fileName:string
@@ -47,12 +47,9 @@ module Exercise11_02 =
         match DateTimeOffset.TryParse(message.FileName) with
         | true, dt ->
             let reading = { TimeStamp = dt; Data = message.Content }
-            // TODO Return an OK result containing a tuple of the message file name and the reading:
-            raise <| NotImplementedException()
+            Ok (message.FileName, reading)
         | false, _ ->
-            // TODO Return an Error result containing an InvalidFileName error,
-            // which itself contains the message file name:
-            raise <| NotImplementedException()
+            Error (InvalidFileName message.FileName)
             
     let validateData(fileName, reading) =
         let nanIndex =
@@ -60,30 +57,26 @@ module Exercise11_02 =
             |> Array.tryFindIndex (Double.IsNaN)
         match nanIndex with
         | Some i ->
-            // TODO Return an Error result containing an DataContainsNaN error, which itself contains
-            // the file name and error index:
-            raise <| NotImplementedException()
+            Error (DataContainsNaN (fileName, i))
         | None ->
-            // TODO Return an Ok result containing the reading:
-            raise <| NotImplementedException()
+            Ok reading
         
     let logError (e: MessageError) =
-        // TODO match on the MessageError cases
-        // and call log with suitable information for each case.
-        raise <| NotImplementedException()
+        match e with
+        | InvalidFileName fn -> log fn
+        | DataContainsNaN (fn, i) -> log (sprintf "%s %i" fn i)
     
-//    open Result
-//    
-//    let processMessage =
-//        getReading
-//        >> bind validateData
-//        >> mapError logError
-//        
-//    let processData data =
-//        data
-//        |> Array.map processMessage
-//        |> Array.choose (fun result ->
-//            match result with
-//            | Ok reading -> reading |> Some
-//            | Error _ -> None)
-//        
+    open Result
+    
+    let processMessage =
+        getReading
+        >> bind validateData
+        >> mapError logError
+        
+    let processData data =
+        data
+        |> Array.map processMessage
+        |> Array.choose (fun result ->
+            match result with
+            | Ok reading -> reading |> Some
+            | Error _ -> None)

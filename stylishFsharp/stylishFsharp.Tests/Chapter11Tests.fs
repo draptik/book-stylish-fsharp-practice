@@ -38,7 +38,12 @@ let ``Exercise 11-2 - Writing a ROP Pipeline`` () =
               Content = [|1.0; 2.0; 3.0; Double.NaN|] }
         |]
 
-//    example
-//    |> processData
-//    |> Array.iter (printfn "%A")
-    0
+    // example |> processData |> Array.iter (printfn "%A")
+    
+    let actual = example |> processData
+    let expected = 2
+    actual.Length =! expected
+    
+    let actualWithErrors = example |> Array.map processMessage
+    let expectedWithErrors = 4
+    actualWithErrors.Length = expectedWithErrors
