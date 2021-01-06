@@ -1,7 +1,6 @@
 module stylishFsharp.Console.Chapter12
 
 open System
-open System.Drawing
 open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
 
@@ -204,25 +203,47 @@ module ShortTermObjects =
         //        *)
         
         /// Listing 12.29
-        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
-            let distance x1 y1 z1 x2 y2 z2 =
+        //        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+        //            let distance x1 y1 z1 x2 y2 z2 =
+        //                (x1 - x2) ** 2. +
+        //                (y1 - y2) ** 2. +
+        //                (z1 - z2) ** 2.
+        //                |> sqrt
+        //                
+        //            let x1, y1, z1 = here
+        //
+        //            coords
+        //            |> Array.filter (fun (x2, y2, z2) ->
+        //                distance x1 y1 z1 x2 y2 z2 <= radius)
+        //        (*
+        //            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
+        //            |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
+        //            |    Old | 143.54 ms | 1.442 ms | 1.204 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.24 KB |
+        //            |    New |  63.67 ms | 1.236 ms | 1.773 ms |         - |         - |        - |   126.35 KB |
+        //
+        //            - no benefit compared to previous solution (12.27)
+        //        *)
+        
+        /// Listing 12.31
+        let withinRadius (radius : float) (here : struct(float*float*float)) (coords : struct(float*float*float)[]) =
+            let distance p1 p2 =
+                let struct(x1, y1, z1) = p1
+                let struct(x2, y2, z2) = p2
                 (x1 - x2) ** 2. +
                 (y1 - y2) ** 2. +
                 (z1 - z2) ** 2.
                 |> sqrt
                 
-            let x1, y1, z1 = here
-
             coords
-            |> Array.filter (fun (x2, y2, z2) ->
-                distance x1 y1 z1 x2 y2 z2 <= radius)
+            |> Array.filter (fun there ->
+                distance here there <= radius)
         (*
             | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
             |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
-            |    Old | 143.54 ms | 1.442 ms | 1.204 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.24 KB |
-            |    New |  63.67 ms | 1.236 ms | 1.773 ms |         - |         - |        - |   126.35 KB |
+            |    Old | 146.77 ms | 2.282 ms | 2.134 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.25 KB |
+            |    New |  59.95 ms | 0.369 ms | 0.327 ms |         - |         - |        - |   134.73 KB |
 
-            - no benefit compared to previous solution (12.27)
+            - no benefit compared to previous solution (12.27 or 12.29)
         *)
             
 module Harness =
@@ -256,6 +277,11 @@ module Harness =
                 r.NextDouble(), r.NextDouble(), r.NextDouble())
         let here = (0., 0., 0.)
         
+        let coordsStruct =
+            coords
+            |> Array.map (fun (x, y, z) -> struct(x, y, z))
+        let hereStruct = struct(0., 0., 0.)
+        
         [<Benchmark>]
         member __.Old() =
             coords
@@ -264,8 +290,8 @@ module Harness =
         
         [<Benchmark>]
         member __.New() =
-            coords
-            |> ShortTermObjects.New.withinRadius 0.1 here
+            coordsStruct
+            |> ShortTermObjects.New.withinRadius 0.1 hereStruct
             |> ignore
 
 let runChapter12_Case1_InappropriateCollectionType () =
