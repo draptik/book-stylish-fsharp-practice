@@ -159,4 +159,14 @@ module Exercise10_01 =
                     |> Async.RunSynchronously)
             strings
             |> Array.sort
+
+        let AsyncGetData (count : int) =
+            async {
+                let! strings =
+                    Array.init count (fun i ->
+                        Server.AsyncGetString i) |> Async.Parallel
+                return
+                    strings
+                    |> Array.sort
+            }
             

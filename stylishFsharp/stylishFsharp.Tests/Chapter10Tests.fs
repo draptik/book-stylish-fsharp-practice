@@ -11,6 +11,7 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     let output = o 
 
     let logReport message = output.WriteLine (sprintf "%s" message)
+    let logReports (messages : string []) = messages |> Array.iter (fun x -> logReport(sprintf "%s" x))
     
     let numberOfThreads outcomes =
         outcomes
@@ -42,19 +43,16 @@ type Chapter10TestsWithOutput(o : ITestOutputHelper) =
     let ``Exercise 10-1: Making some code asynchronous 1. sync example`` () =
         let stopWatch = Stopwatch.StartNew()
         let result = Exercise10_01.Consumer.GetData 10
-        result
-        |> Array.iter (fun x -> logReport(sprintf "%s" x))
-        stopWatch.ElapsedMilliseconds >! 5000L
+        result |> logReports
+        
+        let expectedMinimalMilliseconds = 5000L
+        stopWatch.ElapsedMilliseconds >! expectedMinimalMilliseconds
 
-//    [<Fact>]
-//    let ``Exercise 10-1: Making some code asynchronous 2. async solution`` () =
-//        let stopWatch = Stopwatch.StartNew()
-//        let result =
-//            async {
-//                let! s = Exercise10_01.Consumer.AsyncGetData 10
-//                return s
-//            }
-//        
-//        result
-//        |> Array.iter (fun x -> logReport(sprintf "%s" x))
-//        stopWatch.ElapsedMilliseconds >! 5000L
+    [<Fact>]
+    let ``Exercise 10-1: Making some code asynchronous 2. async solution`` () =
+        let stopWatch = Stopwatch.StartNew()
+        let result = Exercise10_01.Consumer.AsyncGetData 10 |> Async.RunSynchronously
+        result |> logReports
+        
+        let expectedMaximumMilliseconds = 1000L
+        stopWatch.ElapsedMilliseconds <! expectedMaximumMilliseconds
