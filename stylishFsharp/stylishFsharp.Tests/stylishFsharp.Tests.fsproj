@@ -18,10 +18,12 @@
         <Compile Include="Chapter09Tests.fs" />
         <Compile Include="Chapter10Tests.fs" />
         <Compile Include="Chapter11Tests.fs" />
+        <Compile Include="Chapter12Tests.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
         <PackageReference Include="FsUnit.xUnit" Version="4.0.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" />
         <PackageReference Include="Unquote" Version="5.0.0" />
