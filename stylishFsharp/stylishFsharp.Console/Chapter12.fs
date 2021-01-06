@@ -247,25 +247,48 @@ module ShortTermObjects =
         //        *)
         
         /// Listing 12.34
+        //        let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
+        //            let distance x1 y1 z1 x2 y2 z2 =
+        //                pown (x1 - x2) 2 +
+        //                pown (y1 - y2) 2 +
+        //                pown (z1 - z2) 2
+        //                |> sqrt
+        //            let x1, y1, z1 = here
+        //            coords
+        //            |> Array.filter (fun (x2, y2, z2) ->
+        //                distance x1 y1 z1 x2 y2 z2 <= radius)
+        //        (*
+        //            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
+        //            |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
+        //            |    Old | 145.16 ms | 2.490 ms | 2.329 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.01 KB |
+        //            |    New |  11.26 ms | 0.073 ms | 0.069 ms |         - |         - |        - |   126.32 KB |
+        //
+        //            - Pros: faster by factor 10
+        //        *)
+        
+        /// Listing 12.37
         let withinRadius (radius : float) (here : Float3) (coords : Float3[]) =
             let distance x1 y1 z1 x2 y2 z2 =
-                pown (x1 - x2) 2 +
-                pown (y1 - y2) 2 +
-                pown (z1 - z2) 2
+                let dx = x1 - x2
+                let dy = y1 - y2
+                let dz = z1 - z2
+                dx * dx +
+                dy * dy +
+                dz * dz
                 |> sqrt
             let x1, y1, z1 = here
             coords
             |> Array.filter (fun (x2, y2, z2) ->
                 distance x1 y1 z1 x2 y2 z2 <= radius)
         (*
-            | Method |      Mean |    Error |   StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
-            |------- |----------:|---------:|---------:|----------:|----------:|---------:|------------:|
-            |    Old | 145.16 ms | 2.490 ms | 2.329 ms | 6500.0000 | 3500.0000 | 750.0000 | 55122.01 KB |
-            |    New |  11.26 ms | 0.073 ms | 0.069 ms |         - |         - |        - |   126.32 KB |
+            | Method |       Mean |     Error |    StdDev |     Gen 0 |     Gen 1 |    Gen 2 |   Allocated |
+            |------- |-----------:|----------:|----------:|----------:|----------:|---------:|------------:|
+            |    Old | 146.641 ms | 2.9144 ms | 2.9929 ms | 6500.0000 | 3500.0000 | 750.0000 | 55121.36 KB |
+            |    New |   4.874 ms | 0.0194 ms | 0.0181 ms |         - |         - |        - |   126.32 KB |
 
-            - Pros: faster by factor 10
+            - fastest ;-)
         *)
-            
+
 module Harness =
     
     [<MemoryDiagnoser>]
