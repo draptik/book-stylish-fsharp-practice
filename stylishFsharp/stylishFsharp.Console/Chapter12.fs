@@ -289,6 +289,51 @@ module ShortTermObjects =
             - fastest ;-)
         *)
 
+module NaiveStringBuilder =
+    open System
+    module Old =
+        
+        /// Listing 12-39
+        let private buildLine (data : float[]) =
+            let mutable result = ""
+            for x in data do
+                result <- sprintf "%s%f," result x
+            result.TrimEnd(',')
+        
+        let buildCsv (data : float[,]) =
+            let mutable result = ""
+            for r in 0..(data |> Array2D.length1) - 1 do
+                let row = data.[r, *]
+                let rowString = row |> buildLine
+                result <- sprintf "%s%s%s" result rowString Environment.NewLine
+            result
+
+    module New =
+        
+        /// Listing 12-39
+        let private buildLine (data : float[]) =
+            let mutable result = ""
+            for x in data do
+                result <- sprintf "%s%f," result x
+            result.TrimEnd(',')
+        
+        let buildCsv (data : float[,]) =
+            let mutable result = ""
+            for r in 0..(data |> Array2D.length1) - 1 do
+                let row = data.[r, *]
+                let rowString = row |> buildLine
+                result <- sprintf "%s%s%s" result rowString Environment.NewLine
+            result
+        (*
+            | Method |     Mean |    Error |   StdDev |       Gen 0 |       Gen 1 |       Gen 2 | Allocated |
+            |------- |---------:|---------:|---------:|------------:|------------:|------------:|----------:|
+            |    Old | 808.2 ms | 13.03 ms | 16.00 ms | 336000.0000 | 145000.0000 | 136000.0000 |   3.05 GB |
+            |    New | 811.0 ms | 15.63 ms | 14.62 ms | 339000.0000 | 148000.0000 | 139000.0000 |   3.05 GB |
+
+            - baseline
+            - Cons: 3GB of allocated memory (!) and a lot of garbage collection
+        *)
+    
 module Harness =
     
     [<MemoryDiagnoser>]
@@ -332,6 +377,25 @@ module Harness =
             |> ShortTermObjects.New.withinRadius 0.1 here
             |> ignore
 
+    [<MemoryDiagnoser>]
+    type HarnessNaiveStringBuilder() =
+    
+        let data =
+            Array2D.init 500 500 (fun x y ->
+                x * y |> float)
+        
+        [<Benchmark>]
+        member __.Old() =
+            data
+            |> NaiveStringBuilder.Old.buildCsv
+            |> ignore
+            
+        [<Benchmark>]
+        member __.New() =
+            data
+            |> NaiveStringBuilder.New.buildCsv
+            |> ignore
+
 let runChapter12_Case1_InappropriateCollectionType () =
     BenchmarkRunner.Run<Harness.HarnessInappropriateCollectionType>()
     |> printfn "%A"
@@ -340,6 +404,12 @@ let runChapter12_Case1_InappropriateCollectionType () =
     
 let runChapter12_Case2_ShortTermObjects () =
     BenchmarkRunner.Run<Harness.HarnessShortTermObjects>()
+    |> printfn "%A"
+    
+    Console.ReadKey() |> ignore
+    
+let runChapter12_Case3_NaiveStringBuilder () =
+    BenchmarkRunner.Run<Harness.HarnessNaiveStringBuilder>()
     |> printfn "%A"
     
     Console.ReadKey() |> ignore
