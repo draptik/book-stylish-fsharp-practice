@@ -12,5 +12,9 @@ module Dummy =
         Thread.Sleep(10)
         99
 
-//module CaseStudy_01_CollectionTypes =
+module Exercise12_1 =
+    type Transaction = { Id : int }
+    
+    let addTransactions (oldTransactions : Transaction list) (newTransactions : Transaction list) =
+        oldTransactions @ newTransactions
     

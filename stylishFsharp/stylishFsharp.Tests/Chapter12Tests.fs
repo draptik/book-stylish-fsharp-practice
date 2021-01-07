@@ -34,3 +34,14 @@ type Chapter12TestsWithOutput(o : ITestOutputHelper) =
         let old = summary.Reports.[0].ResultStatistics.Mean
         let new' = summary.Reports.[1].ResultStatistics.Mean
         old >! new'
+
+open Chapter12.Exercise12_1
+
+[<Fact>]
+let ``Exercise 12-1 - Concatenating collections`` () =
+    // TODO Implement
+    // TODO this is just a dummy implementation
+    let old = [{Id = 1}]
+    let new' = [{Id = 2}]
+    let actual = addTransactions old new'
+    actual.Length =! 2     
