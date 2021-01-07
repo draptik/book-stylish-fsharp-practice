@@ -1,6 +1,7 @@
 module stylishFsharp.Console.Chapter12
 
 open System
+open System.Text
 open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
 
@@ -311,27 +312,53 @@ module NaiveStringBuilder =
     module New =
         
         /// Listing 12-39
+        //        let private buildLine (data : float[]) =
+        //            let mutable result = ""
+        //            for x in data do
+        //                result <- sprintf "%s%f," result x
+        //            result.TrimEnd(',')
+        //        
+        //        let buildCsv (data : float[,]) =
+        //            let mutable result = ""
+        //            for r in 0..(data |> Array2D.length1) - 1 do
+        //                let row = data.[r, *]
+        //                let rowString = row |> buildLine
+        //                result <- sprintf "%s%s%s" result rowString Environment.NewLine
+        //            result
+        //        (*
+        //            | Method |     Mean |    Error |   StdDev |       Gen 0 |       Gen 1 |       Gen 2 | Allocated |
+        //            |------- |---------:|---------:|---------:|------------:|------------:|------------:|----------:|
+        //            |    Old | 808.2 ms | 13.03 ms | 16.00 ms | 336000.0000 | 145000.0000 | 136000.0000 |   3.05 GB |
+        //            |    New | 811.0 ms | 15.63 ms | 14.62 ms | 339000.0000 | 148000.0000 | 139000.0000 |   3.05 GB |
+        //
+        //            - baseline
+        //            - Cons: 3GB of allocated memory (!) and a lot of garbage collection
+        //        *)
+        
+        /// Listing 12-42
         let private buildLine (data : float[]) =
-            let mutable result = ""
+            let sb = StringBuilder()
             for x in data do
-                result <- sprintf "%s%f," result x
-            result.TrimEnd(',')
+                sb.Append(sprintf "%f," x) |> ignore
+            sb.ToString().TrimEnd(',')
         
         let buildCsv (data : float[,]) =
-            let mutable result = ""
+            let sb = StringBuilder()
             for r in 0..(data |> Array2D.length1) - 1 do
                 let row = data.[r, *]
                 let rowString = row |> buildLine
-                result <- sprintf "%s%s%s" result rowString Environment.NewLine
-            result
+                sb.AppendLine(rowString) |> ignore
+            sb.ToString()
         (*
-            | Method |     Mean |    Error |   StdDev |       Gen 0 |       Gen 1 |       Gen 2 | Allocated |
-            |------- |---------:|---------:|---------:|------------:|------------:|------------:|----------:|
-            |    Old | 808.2 ms | 13.03 ms | 16.00 ms | 336000.0000 | 145000.0000 | 136000.0000 |   3.05 GB |
-            |    New | 811.0 ms | 15.63 ms | 14.62 ms | 339000.0000 | 148000.0000 | 139000.0000 |   3.05 GB |
+            | Method |      Mean |     Error |    StdDev |       Gen 0 |       Gen 1 |       Gen 2 |  Allocated |
+            |------- |----------:|----------:|----------:|------------:|------------:|------------:|-----------:|
+            |    Old | 816.67 ms | 15.677 ms | 25.315 ms | 335000.0000 | 144000.0000 | 135000.0000 | 3127.22 MB |
+            |    New |  85.10 ms |  0.484 ms |  0.404 ms |   9833.3333 |   1833.3333 |    833.3333 |   81.17 MB |
 
-            - baseline
-            - Cons: 3GB of allocated memory (!) and a lot of garbage collection
+            - Pros:
+                - 10x faster
+                - less allocated memory
+                - less garbage collection
         *)
     
 module Harness =
