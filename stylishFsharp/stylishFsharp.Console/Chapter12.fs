@@ -362,8 +362,31 @@ module NaiveStringBuilder =
         //        *)
 
         /// Listing 12-44
+        //        let private buildLine (data : float[]) =
+        //            let cols = data |> Array.map (sprintf "%f")
+        //            String.Join(',', cols)
+        //        
+        //        let buildCsv (data : float[,]) =
+        //            let sb = StringBuilder()
+        //            for r in 0..(data |> Array2D.length1) - 1 do
+        //                let row = data.[r, *]
+        //                let rowString = row |> buildLine
+        //                sb.AppendLine(rowString) |> ignore
+        //            sb.ToString()
+        //        (*
+        //            | Method |      Mean |     Error |    StdDev |       Gen 0 |       Gen 1 |       Gen 2 |  Allocated |
+        //            |------- |----------:|----------:|----------:|------------:|------------:|------------:|-----------:|
+        //            |    Old | 819.02 ms | 15.852 ms | 23.236 ms | 335000.0000 | 144000.0000 | 135000.0000 | 3127.24 MB |
+        //            |    New |  73.19 ms |  0.674 ms |  0.597 ms |   5714.2857 |   2142.8571 |    857.1429 |   47.32 MB |
+        //        
+        //            - Pros:
+        //                - same as 12-42
+        //                - easier to read & optimized
+        //        *)
+
+        /// Listing 12-46
         let private buildLine (data : float[]) =
-            let cols = data |> Array.map (sprintf "%f")
+            let cols = data |> Array.Parallel.map (sprintf "%f")
             String.Join(',', cols)
         
         let buildCsv (data : float[,]) =
@@ -376,12 +399,10 @@ module NaiveStringBuilder =
         (*
             | Method |      Mean |     Error |    StdDev |       Gen 0 |       Gen 1 |       Gen 2 |  Allocated |
             |------- |----------:|----------:|----------:|------------:|------------:|------------:|-----------:|
-            |    Old | 819.02 ms | 15.852 ms | 23.236 ms | 335000.0000 | 144000.0000 | 135000.0000 | 3127.24 MB |
-            |    New |  73.19 ms |  0.674 ms |  0.597 ms |   5714.2857 |   2142.8571 |    857.1429 |   47.32 MB |
+            |    Old | 807.54 ms | 15.713 ms | 23.518 ms | 336000.0000 | 145000.0000 | 136000.0000 | 3127.22 MB |
+            |    New |  35.05 ms |  0.657 ms |  1.832 ms |   6250.0000 |   2093.7500 |    968.7500 |   49.53 MB |
         
-            - Pros:
-                - same as 12-42
-                - easier to read & optimized
+            - Pros: 2x faster than Listing 12-44
         *)
     
 module Harness =
