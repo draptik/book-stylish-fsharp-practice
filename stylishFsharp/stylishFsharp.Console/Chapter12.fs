@@ -336,11 +336,35 @@ module NaiveStringBuilder =
         //        *)
         
         /// Listing 12-42
+        //        let private buildLine (data : float[]) =
+        //            let sb = StringBuilder()
+        //            for x in data do
+        //                sb.Append(sprintf "%f," x) |> ignore
+        //            sb.ToString().TrimEnd(',')
+        //        
+        //        let buildCsv (data : float[,]) =
+        //            let sb = StringBuilder()
+        //            for r in 0..(data |> Array2D.length1) - 1 do
+        //                let row = data.[r, *]
+        //                let rowString = row |> buildLine
+        //                sb.AppendLine(rowString) |> ignore
+        //            sb.ToString()
+        //        (*
+        //            | Method |      Mean |     Error |    StdDev |       Gen 0 |       Gen 1 |       Gen 2 |  Allocated |
+        //            |------- |----------:|----------:|----------:|------------:|------------:|------------:|-----------:|
+        //            |    Old | 816.67 ms | 15.677 ms | 25.315 ms | 335000.0000 | 144000.0000 | 135000.0000 | 3127.22 MB |
+        //            |    New |  85.10 ms |  0.484 ms |  0.404 ms |   9833.3333 |   1833.3333 |    833.3333 |   81.17 MB |
+        //
+        //            - Pros:
+        //                - 10x faster
+        //                - less allocated memory
+        //                - less garbage collection
+        //        *)
+
+        /// Listing 12-44
         let private buildLine (data : float[]) =
-            let sb = StringBuilder()
-            for x in data do
-                sb.Append(sprintf "%f," x) |> ignore
-            sb.ToString().TrimEnd(',')
+            let cols = data |> Array.map (sprintf "%f")
+            String.Join(',', cols)
         
         let buildCsv (data : float[,]) =
             let sb = StringBuilder()
@@ -352,13 +376,12 @@ module NaiveStringBuilder =
         (*
             | Method |      Mean |     Error |    StdDev |       Gen 0 |       Gen 1 |       Gen 2 |  Allocated |
             |------- |----------:|----------:|----------:|------------:|------------:|------------:|-----------:|
-            |    Old | 816.67 ms | 15.677 ms | 25.315 ms | 335000.0000 | 144000.0000 | 135000.0000 | 3127.22 MB |
-            |    New |  85.10 ms |  0.484 ms |  0.404 ms |   9833.3333 |   1833.3333 |    833.3333 |   81.17 MB |
-
+            |    Old | 819.02 ms | 15.852 ms | 23.236 ms | 335000.0000 | 144000.0000 | 135000.0000 | 3127.24 MB |
+            |    New |  73.19 ms |  0.674 ms |  0.597 ms |   5714.2857 |   2142.8571 |    857.1429 |   47.32 MB |
+        
             - Pros:
-                - 10x faster
-                - less allocated memory
-                - less garbage collection
+                - same as 12-42
+                - easier to read & optimized
         *)
     
 module Harness =
