@@ -15,6 +15,9 @@ module Dummy =
 module Exercise12_1 =
     type Transaction = { Id : int }
     
-    let addTransactions (oldTransactions : Transaction list) (newTransactions : Transaction list) =
+    let addTransactionsBaseline (oldTransactions : Transaction list) (newTransactions : Transaction list) =
         oldTransactions @ newTransactions
+    
+    let addTransactions (oldTransactions : Transaction []) (newTransactions : Transaction []) =
+        Array.append oldTransactions newTransactions
     

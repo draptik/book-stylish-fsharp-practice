@@ -467,6 +467,22 @@ module Harness =
             |> NaiveStringBuilder.New.buildCsv
             |> ignore
 
+    open Chapter12.Exercise12_1
+    [<MemoryDiagnoser>]
+    type HarnessExercise12_01() =
+        let a = [{Id = 1};{Id = 2};{Id = 3};{Id = 4};{Id = 5};{Id = 6};]
+        let b = [{Id = 7};{Id = 8};{Id = 9};{Id = 10};{Id = 11};{Id = 12};]
+        let a' = a |> Array.ofList
+        let b' = b |> Array.ofList
+
+        [<Benchmark>]
+        member __.Old() =
+            addTransactionsBaseline a b |> ignore
+            
+        [<Benchmark>]
+        member __.New() =
+            addTransactions a' b' |> ignore
+            
 let runChapter12_Case1_InappropriateCollectionType () =
     BenchmarkRunner.Run<Harness.HarnessInappropriateCollectionType>()
     |> printfn "%A"
@@ -481,6 +497,12 @@ let runChapter12_Case2_ShortTermObjects () =
     
 let runChapter12_Case3_NaiveStringBuilder () =
     BenchmarkRunner.Run<Harness.HarnessNaiveStringBuilder>()
+    |> printfn "%A"
+    
+    Console.ReadKey() |> ignore
+    
+let runChapter12_Exercise_12_01 () =
+    BenchmarkRunner.Run<Harness.HarnessExercise12_01>()
     |> printfn "%A"
     
     Console.ReadKey() |> ignore

@@ -8,5 +8,6 @@ let main argv =
     (* set `stylishFsharp.Console` project to RELEASE! *)
     //    runChapter12_Case1_InappropriateCollectionType()
     //    runChapter12_Case2_ShortTermObjects()
-    runChapter12_Case3_NaiveStringBuilder()
+    //    runChapter12_Case3_NaiveStringBuilder()
+    runChapter12_Exercise_12_01()
     0    
