@@ -514,6 +514,27 @@ module Harness =
             - New vs Old: no performance gain (actually even slightly slower)
             - Even worse: We are creating a new array (!) -> garbage collection
         *)
+
+    open Chapter12.Exercise12_3
+                
+    [<MemoryDiagnoser>]
+    type HarnessExercise12_03() =
+    
+        let data =
+            Array2D.init 500 500 (fun x y ->
+                x * y |> float)
+        
+        [<Benchmark>]
+        member __.Old() =
+            data
+            |> buildCsvBaseline |> ignore
+
+        [<Benchmark>]
+        member __.New() =
+            data
+            |> buildCsvBaseline |> ignore
+        (*
+        *)
             
 let runChapter12_Case1_InappropriateCollectionType () =
     BenchmarkRunner.Run<Harness.HarnessInappropriateCollectionType>()
@@ -541,6 +562,12 @@ let runChapter12_Exercise_12_01 () =
     
 let runChapter12_Exercise_12_02 () =
     BenchmarkRunner.Run<Harness.HarnessExercise12_02>()
+    |> printfn "%A"
+    
+    Console.ReadKey() |> ignore
+    
+let runChapter12_Exercise_12_03 () =
+    BenchmarkRunner.Run<Harness.HarnessExercise12_03>()
     |> printfn "%A"
     
     Console.ReadKey() |> ignore

@@ -1,5 +1,7 @@
 module Chapter12
 
+open System.Text
+
 module Dummy =
 
     open System.Threading
@@ -45,4 +47,18 @@ module Exercise12_2 =
         |> Array.Parallel.map (fun (x2, y2, z2) ->
             distance x1 y1 z1 x2 y2 z2)
         |> Array.filter (fun d -> d <= radius)
-          
+
+module Exercise12_3 =
+    open System
+    
+    let private buildLine (data : float[]) =
+        let cols = data |> Array.Parallel.map (sprintf "%f")
+        String.Join(',', cols)
+
+    let buildCsvBaseline (data : float[,]) =
+        let sb = StringBuilder()
+        for r in 0..(data |> Array2D.length1) - 1 do
+            let row = data.[r, *]
+            let rowString = row |> buildLine
+            sb.AppendLine(rowString) |> ignore
+        sb.ToString()
