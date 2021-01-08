@@ -19,6 +19,7 @@
         <Compile Include="Chapter10Tests.fs" />
         <Compile Include="Chapter11Tests.fs" />
         <Compile Include="Chapter12Tests.fs" />
+        <Compile Include="Chapter13Tests.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
