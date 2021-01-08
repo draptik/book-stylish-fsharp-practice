@@ -62,3 +62,10 @@ module Exercise12_3 =
             let rowString = row |> buildLine
             sb.AppendLine(rowString) |> ignore
         sb.ToString()
+
+    let buildCsv (data : float[,]) =
+        let dataStrings = data |> Array2D.map (sprintf "%f")
+        let sb = StringBuilder()
+        for cols in 0..(dataStrings |> Array2D.length1) - 1 do
+            sb.AppendLine(String.Join(',', cols)) |> ignore
+        sb.ToString()

@@ -532,7 +532,7 @@ module Harness =
         [<Benchmark>]
         member __.New() =
             data
-            |> buildCsvBaseline |> ignore
+            |> buildCsv |> ignore
         (*
         *)
             
