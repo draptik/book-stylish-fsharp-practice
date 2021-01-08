@@ -4,6 +4,7 @@ open System
 open System.Text
 open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
+open Chapter12
 
 module InappropriateCollectionType =
     module Old =
@@ -468,6 +469,8 @@ module Harness =
             |> ignore
 
     open Chapter12.Exercise12_1
+    open Chapter12.Exercise12_2
+    
     [<MemoryDiagnoser>]
     type HarnessExercise12_01() =
         let a = [{Id = 1};{Id = 2};{Id = 3};{Id = 4};{Id = 5};{Id = 6};]
@@ -482,6 +485,35 @@ module Harness =
         [<Benchmark>]
         member __.New() =
             addTransactions a' b' |> ignore
+            
+    [<MemoryDiagnoser>]
+    type HarnessExercise12_02() =
+        let r = Random(1)
+        let coords =
+            Array.init 1_000_000 (fun _ ->
+                r.NextDouble(), r.NextDouble(), r.NextDouble())
+        let here = (0., 0., 0.)
+        
+        [<Benchmark>]
+        member __.Old() =
+            coords
+            |> withinRadiusBaseline 0.1 here
+            |> ignore
+            
+        [<Benchmark>]
+        member __.New() =
+            coords
+            |> withinRadius 0.1 here
+            |> ignore
+        (*
+            | Method |     Mean |     Error |    StdDev |    Gen 0 |    Gen 1 |    Gen 2 |  Allocated |
+            |------- |---------:|----------:|----------:|---------:|---------:|---------:|-----------:|
+            |    Old | 4.739 ms | 0.0244 ms | 0.0216 ms |        - |        - |        - |  137.59 KB |
+            |    New | 4.998 ms | 0.0490 ms | 0.0434 ms | 140.6250 | 140.6250 | 140.6250 | 7969.78 KB |
+
+            - New vs Old: no performance gain (actually even slightly slower)
+            - Even worse: We are creating a new array (!) -> garbage collection
+        *)
             
 let runChapter12_Case1_InappropriateCollectionType () =
     BenchmarkRunner.Run<Harness.HarnessInappropriateCollectionType>()
@@ -503,6 +535,12 @@ let runChapter12_Case3_NaiveStringBuilder () =
     
 let runChapter12_Exercise_12_01 () =
     BenchmarkRunner.Run<Harness.HarnessExercise12_01>()
+    |> printfn "%A"
+    
+    Console.ReadKey() |> ignore
+    
+let runChapter12_Exercise_12_02 () =
+    BenchmarkRunner.Run<Harness.HarnessExercise12_02>()
     |> printfn "%A"
     
     Console.ReadKey() |> ignore
