@@ -60,8 +60,46 @@ module MinorPlanets =
         SemiMajor:float option; Uncertainty:char option
         Reference: string; Observations:int option
         Oppositions:int option; Range:ObservationRange option
-        RmsResiduals:double option; PerturbersCoarse:string
+        RmsResidual:double option; PerturbersCoarse:string
         PerturbersPrecise:string;ComputerName:string
         Flags:char[];ReadableDesignation:string
         LastOpposition: string
     }
+    
+    let private create (line : string) =
+        let oppositions = line |> columnAsString 124 126 |> toInt
+        let range = line |> rangeFromLine oppositions
+        
+        {
+            Designation = columnAsString 1 7 line
+            AbsMag = columnAsDouble 9 13 line
+            SlopeParam = columnAsDouble 15 19 line
+            Epoch = columnAsString 21 25 line
+            MeanAnom = columnAsDouble 27 35 line
+            Perihelion = columnAsDouble 38 46 line
+            Node = columnAsDouble 49 57 line
+            Inclination = columnAsDouble 60 68 line
+            OrbEcc = columnAsDouble 71 79 line
+            MeanDaily = columnAsDouble 81 91 line
+            SemiMajor = columnAsDouble 93 103 line
+            Uncertainty = columnAsChar 106 106 line
+            Reference = columnAsString 108 116 line
+            Observations = columnAsInt 118 122 line
+            Oppositions = oppositions
+            Range = range
+            RmsResidual = columnAsDouble 138 141 line
+            PerturbersCoarse = columnAsString 143 145 line
+            PerturbersPrecise = columnAsString 147 149 line
+            ComputerName = columnAsString 151 160 line
+            Flags = columnAsCharArray 162 165 line
+            ReadableDesignation = columnAsString 167 194 line
+            LastOpposition = columnAsString 195 202 line
+        }
+    
+    let createFromData (data : seq<string>) =
+        data
+        |> Seq.skipWhile (fun line -> line.StartsWith("----------") |> not)
+        |> Seq.skip 1
+        |> Seq.filter (fun line -> line.Length > 0)
+        |> Seq.map (fun line -> create line)
+        
