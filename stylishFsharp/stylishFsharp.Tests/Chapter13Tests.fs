@@ -11,7 +11,6 @@ type Chapter13WithOutput(o : ITestOutputHelper) =
     let output = o
     let log msg = output.WriteLine (sprintf "%s" msg)
     
-    // NOTE this test takes ~20sec in Rider :-(
     [<Fact>]
     let ``Initial test of demo function`` () =
 

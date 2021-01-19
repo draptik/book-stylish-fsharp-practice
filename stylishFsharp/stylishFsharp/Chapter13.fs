@@ -20,25 +20,29 @@ module Convert =
         | true, x -> Some x
         | false, _ -> None
 
-module MinorPlanets =
-    open System
+module Column =
     open Convert
     
-    let columnAsString startInd endInd (line : string) =
+    let asString startInd endInd (line : string) =
         line.Substring(startInd-1, endInd-startInd).Trim()
 
-    let columnAsCharArray startInd endInd (line : string) =
-        charArray(columnAsString startInd endInd line)
+    let asCharArray startInd endInd (line : string) =
+        charArray(asString startInd endInd line)
 
-    let columnAsInt startInd endInd (line : string) =
-        tryInt(columnAsString startInd endInd line)
+    let tryAsInt startInd endInd (line : string) =
+        tryInt(asString startInd endInd line)
 
-    let columnAsDouble startInd endInd (line : string) =
-        tryDouble(columnAsString startInd endInd line)
+    let tryAsDouble startInd endInd (line : string) =
+        tryDouble(asString startInd endInd line)
 
-    let columnAsChar startInd endInd (line : string) =
-        tryChar(columnAsString startInd endInd line)
+    let tryAsChar startInd endInd (line : string) =
+        tryChar(asString startInd endInd line)
+    
 
+module MinorPlanets =
+    open Convert
+    open Column
+    
     type ObservationRange =
         | SingleOpposition of int
         | MultiOpposition of int * int
@@ -47,10 +51,10 @@ module MinorPlanets =
         match oppositions with
         | None -> None
         | Some o when o = 1 ->
-            line  |> columnAsInt 128 131
+            line  |> tryAsInt 128 131
             |> Option.map SingleOpposition
         | Some o ->
-            match (line |> columnAsInt 128 131), (line |> columnAsInt 128 136) with
+            match (line |> tryAsInt 128 131), (line |> tryAsInt 128 136) with
             | Some (firstObservedYear), Some(lastObservedYear) ->
                 MultiOpposition(firstObservedYear, lastObservedYear) |> Some
             | _ -> None
@@ -71,33 +75,33 @@ module MinorPlanets =
     }
     
     let private create (line : string) =
-        let oppositions = line |> columnAsString 124 126 |> tryInt
+        let oppositions = line |> asString 124 126 |> tryInt
         let range = line |> rangeFromLine oppositions
         
         {
-            Designation = columnAsString 1 7 line
-            AbsMag = columnAsDouble 9 13 line
-            SlopeParam = columnAsDouble 15 19 line
-            Epoch = columnAsString 21 25 line
-            MeanAnom = columnAsDouble 27 35 line
-            Perihelion = columnAsDouble 38 46 line
-            Node = columnAsDouble 49 57 line
-            Inclination = columnAsDouble 60 68 line
-            OrbEcc = columnAsDouble 71 79 line
-            MeanDaily = columnAsDouble 81 91 line
-            SemiMajor = columnAsDouble 93 103 line
-            Uncertainty = columnAsChar 106 106 line
-            Reference = columnAsString 108 116 line
-            Observations = columnAsInt 118 122 line
+            Designation = asString 1 7 line
+            AbsMag = tryAsDouble 9 13 line
+            SlopeParam = tryAsDouble 15 19 line
+            Epoch = asString 21 25 line
+            MeanAnom = tryAsDouble 27 35 line
+            Perihelion = tryAsDouble 38 46 line
+            Node = tryAsDouble 49 57 line
+            Inclination = tryAsDouble 60 68 line
+            OrbEcc = tryAsDouble 71 79 line
+            MeanDaily = tryAsDouble 81 91 line
+            SemiMajor = tryAsDouble 93 103 line
+            Uncertainty = tryAsChar 106 106 line
+            Reference = asString 108 116 line
+            Observations = tryAsInt 118 122 line
             Oppositions = oppositions
             Range = range
-            RmsResidual = columnAsDouble 138 141 line
-            PerturbersCoarse = columnAsString 143 145 line
-            PerturbersPrecise = columnAsString 147 149 line
-            ComputerName = columnAsString 151 160 line
-            Flags = columnAsCharArray 162 165 line
-            ReadableDesignation = columnAsString 167 194 line
-            LastOpposition = columnAsString 195 202 line
+            RmsResidual = tryAsDouble 138 141 line
+            PerturbersCoarse = asString 143 145 line
+            PerturbersPrecise = asString 147 149 line
+            ComputerName = asString 151 160 line
+            Flags = asCharArray 162 165 line
+            ReadableDesignation = asString 167 194 line
+            LastOpposition = asString 195 202 line
         }
     
     let createFromData (data : seq<string>) =
