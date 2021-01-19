@@ -18,16 +18,16 @@ type Chapter13WithOutput(o : ITestOutputHelper) =
             // Brightest 10 minor planets (absolute magnitude)
             Directory.GetCurrentDirectory() + @"../../../../sampledata/MPCORB.DAT"
             |> File.ReadLines
-            |> MinorPlanets.createFromData
+            |> MinorPlanet.fromMpcOrbData
             |> Seq.filter (fun mp ->
-                mp.AbsMag |> Option.isSome)
+                mp.H |> Option.isSome)
             |> Seq.sortBy (fun mp ->
-                mp.AbsMag.Value)
+                mp.H.Value)
             |> Seq.truncate 10
             |> Seq.map (fun mp ->
                 (sprintf "Name: %s Abs. magnitude: %0.2f"
                     mp.ReadableDesignation
-                    (mp.AbsMag |> Option.defaultValue nan)))
+                    (mp.H |> Option.defaultValue nan)))
             |> List.ofSeq // converting to list because seq can't be compared in test
         
         let actual = demo()

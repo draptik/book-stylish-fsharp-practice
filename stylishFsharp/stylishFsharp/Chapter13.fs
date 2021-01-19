@@ -62,57 +62,96 @@ module ObservationRange =
             | _ ->
                 None
 
-module MinorPlanets =
-            
-    type MinorPlanet = {
-        Designation : string; AbsMag : float option
-        SlopeParam:float option; Epoch:string
-        MeanAnom:float option; Perihelion:float option
-        Node:float option; Inclination:float option
-        OrbEcc:float option; MeanDaily:float option
-        SemiMajor:float option; Uncertainty:char option
-        Reference: string; Observations:int option
-        Oppositions:int option; Range:ObservationRange.Range option
-        RmsResidual:double option; PerturbersCoarse:string
-        PerturbersPrecise:string;ComputerName:string
-        Flags:char[];ReadableDesignation:string
-        LastOpposition: string
-    }
-    
-    let private create (line : string) =
+module MinorPlanet =
+
+    type Body = {
+        /// Number of provisional designation (packed format)
+        Designation : string
+        /// Absolute magnitude
+        H : float option
+        /// Slope parameter
+        G : float option
+        /// Epoch in packed form
+        Epoch : string
+        /// Mean anomaly of the epoch (degrees)
+        M : float option
+        /// Argument of periphelion, J2000.0 (degrees)
+        Perihelion : float option
+        /// Longitude of the ascending node, J2000.0 (degrees)
+        Node : float option
+        /// Inclination to the ecliptic, J2000.0 (degrees) 
+        Inclination : float option
+        /// Orbital eccentricity
+        e : float option
+        /// Mean daily motion (degrees per day)
+        n : float option
+        /// Semimajor axis (AU)
+        a : float option
+        /// Uncertainty parameter
+        Uncertainty : char option
+        /// Reference
+        Reference : string
+        /// Number of observations
+        Observations : int option
+        /// Number of oppositions
+        Oppositions : int option
+        /// Year of first and last observation,
+        /// or arc length in days
+        Range : ObservationRange.Range option
+        /// RMS residual (arcseconds)
+        RmsResidual : double option
+        /// Coarse indicator of perturbers
+        PerturbersCoarse : string
+        /// Precise indicator of perturbers
+        PerturbersPrecise : string
+        /// Computer name
+        ComputerName : string
+        /// Flags
+        Flags : char[]
+        /// Readable designation
+        ReadableDesignation : string
+        /// Date of last observation included in orbit solution (YYYYMMDD)
+        LastOpposition : string }    
+
+    let fromMpcOrbLine (line : string) =
         let oppositions = line |> Column.asString 124 126 |> Convert.tryInt
         let range = line |> ObservationRange.fromLine oppositions
         
         {
-            Designation = Column.asString 1 7 line
-            AbsMag = Column.tryAsDouble 9 13 line
-            SlopeParam = Column.tryAsDouble 15 19 line
-            Epoch = Column.asString 21 25 line
-            MeanAnom = Column.tryAsDouble 27 35 line
-            Perihelion = Column.tryAsDouble 38 46 line
-            Node = Column.tryAsDouble 49 57 line
-            Inclination = Column.tryAsDouble 60 68 line
-            OrbEcc = Column.tryAsDouble 71 79 line
-            MeanDaily = Column.tryAsDouble 81 91 line
-            SemiMajor = Column.tryAsDouble 93 103 line
-            Uncertainty = Column.tryAsChar 106 106 line
-            Reference = Column.asString 108 116 line
-            Observations = Column.tryAsInt 118 122 line
-            Oppositions = oppositions
-            Range = range
-            RmsResidual = Column.tryAsDouble 138 141 line
-            PerturbersCoarse = Column.asString 143 145 line
-            PerturbersPrecise = Column.asString 147 149 line
-            ComputerName = Column.asString 151 160 line
-            Flags = Column.asCharArray 162 165 line
-            ReadableDesignation = Column.asString 167 194 line
-            LastOpposition = Column.asString 195 202 line
-        }
-    
-    let createFromData (data : seq<string>) =
+            Designation =         line |> Column.asString    1     7   
+            H =                   line |> Column.tryAsDouble 9    13  
+            G =                   line |> Column.tryAsDouble 15   19  
+            Epoch =               line |> Column.asString    21   25  
+            M =                   line |> Column.tryAsDouble 27   35  
+            Perihelion =          line |> Column.tryAsDouble 38   46  
+            Node =                line |> Column.tryAsDouble 49   57  
+            Inclination =         line |> Column.tryAsDouble 60   68  
+            e =                   line |> Column.tryAsDouble 71   79  
+            n =                   line |> Column.tryAsDouble 81   91  
+            a =                   line |> Column.tryAsDouble 93  103 
+            Uncertainty =         line |> Column.tryAsChar   106 106 
+            Reference =           line |> Column.asString    108 116 
+            Observations =        line |> Column.tryAsInt    118 122 
+            Oppositions =         oppositions
+            Range =               range
+            RmsResidual =         line |> Column.tryAsDouble 138 141 
+            PerturbersCoarse =    line |> Column.asString    143 145 
+            PerturbersPrecise =   line |> Column.asString    147 149 
+            ComputerName =        line |> Column.asString    151 160 
+            Flags =               line |> Column.asCharArray 162 165 
+            ReadableDesignation = line |> Column.asString    167 194 
+            LastOpposition =      line |> Column.asString    195 202 
+        }    
+
+    let private skipHeader (data : seq<string>) =
         data
-        |> Seq.skipWhile (fun line -> line.StartsWith("----------") |> not)
+        |> Seq.skipWhile (fun line ->
+            line.StartsWith("----------") |> not)
         |> Seq.skip 1
+        
+    let fromMpcOrbData (data : seq<string>) =
+        data
+        |> skipHeader
         |> Seq.filter (fun line -> line.Length > 0)
-        |> Seq.map (fun line -> create line)
+        |> Seq.map fromMpcOrbLine
         
