@@ -39,23 +39,30 @@ module Column =
     let tryAsChar startInd endInd =
         (asString startInd endInd) >> Convert.tryChar
 
-module MinorPlanets =
-    
-    type ObservationRange =
-        | SingleOpposition of int
-        | MultiOpposition of int * int
-        
-    let rangeFromLine (oppositions : int option) (line : string) =
+module ObservationRange =
+    type Range =
+        private
+        | SingleOpposition of ArcLengthDays:int
+        | MultiOpposition of FirstYear:int * LastYear:int
+
+    let fromLine (oppositions : int option) (line : string) =
         match oppositions with
-        | None -> None
+        | None ->
+            None
         | Some o when o = 1 ->
-            line  |> Column.tryAsInt 128 131
+            line
+            |> Column.tryAsInt 128 131
             |> Option.map SingleOpposition
-        | Some o ->
-            match (line |> Column.tryAsInt 128 131), (line |> Column.tryAsInt 128 136) with
-            | Some (firstObservedYear), Some(lastObservedYear) ->
-                MultiOpposition(firstObservedYear, lastObservedYear) |> Some
-            | _ -> None
+        | Some _ ->
+            let firstYear = line |> Column.tryAsInt 128 131
+            let lastYear = line |> Column.tryAsInt 128 136
+            match firstYear, lastYear with
+            | Some (fy), Some(ly) ->
+                MultiOpposition(FirstYear=fy, LastYear=ly) |> Some
+            | _ ->
+                None
+
+module MinorPlanets =
             
     type MinorPlanet = {
         Designation : string; AbsMag : float option
@@ -65,7 +72,7 @@ module MinorPlanets =
         OrbEcc:float option; MeanDaily:float option
         SemiMajor:float option; Uncertainty:char option
         Reference: string; Observations:int option
-        Oppositions:int option; Range:ObservationRange option
+        Oppositions:int option; Range:ObservationRange.Range option
         RmsResidual:double option; PerturbersCoarse:string
         PerturbersPrecise:string;ComputerName:string
         Flags:char[];ReadableDesignation:string
@@ -74,7 +81,7 @@ module MinorPlanets =
     
     let private create (line : string) =
         let oppositions = line |> Column.asString 124 126 |> Convert.tryInt
-        let range = line |> rangeFromLine oppositions
+        let range = line |> ObservationRange.fromLine oppositions
         
         {
             Designation = Column.asString 1 7 line
