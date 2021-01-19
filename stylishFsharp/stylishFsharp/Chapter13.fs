@@ -1,24 +1,28 @@
 module Chapter13
 
-module MinorPlanets =
+module Convert =
     open System
-    
+
     let charArray (s : string) =
         s.ToCharArray()
         
-    let toDouble (s : string) =
+    let tryDouble (s : string) =
         match Double.TryParse(s) with
         | true, x -> Some x
         | false, _ -> None
     
-    let toChar (s : string) =
+    let tryChar (s : string) =
         if String.IsNullOrWhiteSpace(s) then None
         else Some (s.[0])
 
-    let toInt (s : string) =
+    let tryInt (s : string) =
         match Int32.TryParse(s) with
         | true, x -> Some x
         | false, _ -> None
+
+module MinorPlanets =
+    open System
+    open Convert
     
     let columnAsString startInd endInd (line : string) =
         line.Substring(startInd-1, endInd-startInd).Trim()
@@ -27,13 +31,13 @@ module MinorPlanets =
         charArray(columnAsString startInd endInd line)
 
     let columnAsInt startInd endInd (line : string) =
-        toInt(columnAsString startInd endInd line)
+        tryInt(columnAsString startInd endInd line)
 
     let columnAsDouble startInd endInd (line : string) =
-        toDouble(columnAsString startInd endInd line)
+        tryDouble(columnAsString startInd endInd line)
 
     let columnAsChar startInd endInd (line : string) =
-        toChar(columnAsString startInd endInd line)
+        tryChar(columnAsString startInd endInd line)
 
     type ObservationRange =
         | SingleOpposition of int
@@ -67,7 +71,7 @@ module MinorPlanets =
     }
     
     let private create (line : string) =
-        let oppositions = line |> columnAsString 124 126 |> toInt
+        let oppositions = line |> columnAsString 124 126 |> tryInt
         let range = line |> rangeFromLine oppositions
         
         {
