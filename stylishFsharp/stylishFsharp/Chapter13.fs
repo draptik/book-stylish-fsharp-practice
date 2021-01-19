@@ -154,4 +154,49 @@ module MinorPlanet =
         |> skipHeader
         |> Seq.filter (fun line -> line.Length > 0)
         |> Seq.map fromMpcOrbLine
+
+module Exercise13_1 =
+
+    module Helper =
+        open System.IO
         
+        let createReadOnlyFile name =
+            File.WriteAllText (name, "test")
+            let fi = FileInfo(name)
+            fi.IsReadOnly <- true
+        
+        let deleteFile name =
+            let fi = FileInfo(name)
+            fi.IsReadOnly <- false
+            File.Delete (name)
+    
+    module InitialCode =
+        open System.IO
+        open System.Text.RegularExpressions
+        
+        let find pattern dir =
+            let re = Regex(pattern)
+            Directory.EnumerateFiles
+                (dir, "*.*", SearchOption.AllDirectories)
+            |> Seq.filter (fun path -> re.IsMatch(Path.GetFileName(path)))
+            |> Seq.map (fun path ->
+                FileInfo(path))
+            |> Seq.filter (fun fi ->
+                fi.Attributes.HasFlag(FileAttributes.ReadOnly))
+            |> Seq.map (fun fi -> fi.Name)
+                
+    module ImprovedCode =
+        open System.IO
+        open System.Text.RegularExpressions
+        
+        let find pattern dir =
+            let re = Regex(pattern)
+            Directory.EnumerateFiles
+                (dir, "*.*", SearchOption.AllDirectories)
+            |> Seq.filter (fun path -> re.IsMatch(Path.GetFileName(path)))
+            |> Seq.map (fun path ->
+                FileInfo(path))
+            |> Seq.filter (fun fi ->
+                fi.Attributes.HasFlag(FileAttributes.ReadOnly))
+            |> Seq.map (fun fi -> fi.Name)
+            

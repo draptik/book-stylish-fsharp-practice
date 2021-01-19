@@ -6,12 +6,13 @@ open Xunit
 open Xunit.Abstractions
 
 open Chapter13
+open Exercise13_1
 
 type Chapter13WithOutput(o : ITestOutputHelper) =
     let output = o
     let log msg = output.WriteLine (sprintf "%s" msg)
     
-    [<Fact>]
+    [<Fact(Skip="long running test (~20sec)")>]
     let ``Initial test of demo function`` () =
 
         let demo() =
@@ -46,3 +47,36 @@ type Chapter13WithOutput(o : ITestOutputHelper) =
              "Name: (4) Vesta Abs. magnitude: 3.28" ]
                     
         actual =! expected
+
+    let setup names = names |> Seq.iter Helper.createReadOnlyFile
+    let cleanup names = names |> Seq.iter Helper.deleteFile
+    
+    [<Fact>]
+    let ``Exercise 13-1 - Making code readable - initial code`` () =
+        let testFileNames = seq { "test_1.txt"; "test_2.txt"; "test_3_abc.txt"; "test_4_abc.txt" }
+        testFileNames |> setup        
+        
+        let pattern = "test.*abc\.txt"
+        let currentDir = "."
+        
+        let filenames = InitialCode.find pattern currentDir
+        
+        filenames |> Seq.iter log
+        (filenames |> Seq.length) =! 2
+
+        testFileNames |> cleanup
+        
+    [<Fact>]
+    let ``Exercise 13-1 - Making code readable - improved code`` () =
+        let testFileNames = seq { "test_1.txt"; "test_2.txt"; "test_3_abc.txt"; "test_4_abc.txt" }
+        testFileNames |> setup        
+        
+        let pattern = "test.*abc\.txt"
+        let currentDir = "."
+        
+        let filenames = ImprovedCode.find pattern currentDir
+        
+        filenames |> Seq.iter log
+        (filenames |> Seq.length) =! 2
+
+        testFileNames |> cleanup
