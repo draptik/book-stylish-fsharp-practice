@@ -59,10 +59,10 @@ type Chapter13WithOutput(o : ITestOutputHelper) =
         let pattern = "test.*abc\.txt"
         let currentDir = "."
         
-        let filenames = InitialCode.find pattern currentDir
+        let results = InitialCode.find pattern currentDir
         
-        filenames |> Seq.iter log
-        (filenames |> Seq.length) =! 2
+        results |> Seq.iter log
+        (results |> Seq.length) =! 2
 
         testFileNames |> cleanup
         
@@ -74,9 +74,9 @@ type Chapter13WithOutput(o : ITestOutputHelper) =
         let pattern = "test.*abc\.txt"
         let currentDir = "."
         
-        let filenames = ImprovedCode.find pattern currentDir
+        let results = ImprovedCode.FileSearch.findReadOnly pattern currentDir
         
-        filenames |> Seq.iter log
-        (filenames |> Seq.length) =! 2
+        results |> Seq.iter log
+        (results |> Seq.length) =! 2
 
         testFileNames |> cleanup
