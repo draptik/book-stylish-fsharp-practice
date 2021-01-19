@@ -21,8 +21,6 @@ module Convert =
         | false, _ -> None
 
 module Column =
-    open Convert
-    
     let asString startInd endInd (line : string) =
         let len =  endInd - startInd + 1
         line
@@ -30,20 +28,18 @@ module Column =
             .Trim()
 
     let asCharArray startInd endInd =
-        (asString startInd endInd) >> charArray
+        (asString startInd endInd) >> Convert.charArray
 
     let tryAsInt startInd endInd =
-        (asString startInd endInd) >> tryInt
+        (asString startInd endInd) >> Convert.tryInt
 
     let tryAsDouble startInd endInd =
-        (asString startInd endInd) >> tryDouble
+        (asString startInd endInd) >> Convert.tryDouble
 
     let tryAsChar startInd endInd =
-        (asString startInd endInd) >> tryChar
+        (asString startInd endInd) >> Convert.tryChar
 
 module MinorPlanets =
-    open Convert
-    open Column
     
     type ObservationRange =
         | SingleOpposition of int
@@ -53,10 +49,10 @@ module MinorPlanets =
         match oppositions with
         | None -> None
         | Some o when o = 1 ->
-            line  |> tryAsInt 128 131
+            line  |> Column.tryAsInt 128 131
             |> Option.map SingleOpposition
         | Some o ->
-            match (line |> tryAsInt 128 131), (line |> tryAsInt 128 136) with
+            match (line |> Column.tryAsInt 128 131), (line |> Column.tryAsInt 128 136) with
             | Some (firstObservedYear), Some(lastObservedYear) ->
                 MultiOpposition(firstObservedYear, lastObservedYear) |> Some
             | _ -> None
@@ -77,33 +73,33 @@ module MinorPlanets =
     }
     
     let private create (line : string) =
-        let oppositions = line |> asString 124 126 |> tryInt
+        let oppositions = line |> Column.asString 124 126 |> Convert.tryInt
         let range = line |> rangeFromLine oppositions
         
         {
-            Designation = asString 1 7 line
-            AbsMag = tryAsDouble 9 13 line
-            SlopeParam = tryAsDouble 15 19 line
-            Epoch = asString 21 25 line
-            MeanAnom = tryAsDouble 27 35 line
-            Perihelion = tryAsDouble 38 46 line
-            Node = tryAsDouble 49 57 line
-            Inclination = tryAsDouble 60 68 line
-            OrbEcc = tryAsDouble 71 79 line
-            MeanDaily = tryAsDouble 81 91 line
-            SemiMajor = tryAsDouble 93 103 line
-            Uncertainty = tryAsChar 106 106 line
-            Reference = asString 108 116 line
-            Observations = tryAsInt 118 122 line
+            Designation = Column.asString 1 7 line
+            AbsMag = Column.tryAsDouble 9 13 line
+            SlopeParam = Column.tryAsDouble 15 19 line
+            Epoch = Column.asString 21 25 line
+            MeanAnom = Column.tryAsDouble 27 35 line
+            Perihelion = Column.tryAsDouble 38 46 line
+            Node = Column.tryAsDouble 49 57 line
+            Inclination = Column.tryAsDouble 60 68 line
+            OrbEcc = Column.tryAsDouble 71 79 line
+            MeanDaily = Column.tryAsDouble 81 91 line
+            SemiMajor = Column.tryAsDouble 93 103 line
+            Uncertainty = Column.tryAsChar 106 106 line
+            Reference = Column.asString 108 116 line
+            Observations = Column.tryAsInt 118 122 line
             Oppositions = oppositions
             Range = range
-            RmsResidual = tryAsDouble 138 141 line
-            PerturbersCoarse = asString 143 145 line
-            PerturbersPrecise = asString 147 149 line
-            ComputerName = asString 151 160 line
-            Flags = asCharArray 162 165 line
-            ReadableDesignation = asString 167 194 line
-            LastOpposition = asString 195 202 line
+            RmsResidual = Column.tryAsDouble 138 141 line
+            PerturbersCoarse = Column.asString 143 145 line
+            PerturbersPrecise = Column.asString 147 149 line
+            ComputerName = Column.asString 151 160 line
+            Flags = Column.asCharArray 162 165 line
+            ReadableDesignation = Column.asString 167 194 line
+            LastOpposition = Column.asString 195 202 line
         }
     
     let createFromData (data : seq<string>) =
