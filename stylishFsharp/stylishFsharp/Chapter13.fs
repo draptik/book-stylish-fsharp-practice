@@ -29,18 +29,17 @@ module Column =
             .Substring(startInd-1, len)
             .Trim()
 
-    let asCharArray startInd endInd (line : string) =
-        charArray(asString startInd endInd line)
+    let asCharArray startInd endInd =
+        (asString startInd endInd) >> charArray
 
-    let tryAsInt startInd endInd (line : string) =
-        tryInt(asString startInd endInd line)
+    let tryAsInt startInd endInd =
+        (asString startInd endInd) >> tryInt
 
-    let tryAsDouble startInd endInd (line : string) =
-        tryDouble(asString startInd endInd line)
+    let tryAsDouble startInd endInd =
+        (asString startInd endInd) >> tryDouble
 
-    let tryAsChar startInd endInd (line : string) =
-        tryChar(asString startInd endInd line)
-    
+    let tryAsChar startInd endInd =
+        (asString startInd endInd) >> tryChar
 
 module MinorPlanets =
     open Convert
