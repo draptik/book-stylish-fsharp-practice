@@ -24,7 +24,10 @@ module Column =
     open Convert
     
     let asString startInd endInd (line : string) =
-        line.Substring(startInd-1, endInd-startInd).Trim()
+        let len =  endInd - startInd + 1
+        line
+            .Substring(startInd-1, len)
+            .Trim()
 
     let asCharArray startInd endInd (line : string) =
         charArray(asString startInd endInd line)

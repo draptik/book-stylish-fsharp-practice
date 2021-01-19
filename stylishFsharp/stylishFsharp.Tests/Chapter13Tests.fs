@@ -34,15 +34,15 @@ type Chapter13WithOutput(o : ITestOutputHelper) =
         actual |> List.iter (log) // debugging
 
         let expected = [
-            "Name: (136199) Eris Abs. magnitude: -1.10"
-            "Name: (134340) Pluto Abs. magnitude: -0.40"
-            "Name: (136472) Makemake Abs. magnitude: -0.10"
-            "Name: (136108) Haumea Abs. magnitude: 0.30"
-            "Name: (90377) Sedna Abs. magnitude: 1.30"
-            "Name: (225088) Gonggong Abs. magnitude: 1.90"
-            "Name: (90482) Orcus Abs. magnitude: 2.30"
-            "Name: (50000) Quaoar Abs. magnitude: 2.50"
-            "Name: (4) Vesta Abs. magnitude: 3.20"
-            "Name: (532037) 2013 FY27 Abs. magnitude: 3.20"
-        ]
+             "Name: (136199) Eris Abs. magnitude: -1.10"
+             "Name: (134340) Pluto Abs. magnitude: -0.45"
+             "Name: (136472) Makemake Abs. magnitude: -0.13"
+             "Name: (136108) Haumea Abs. magnitude: 0.30"
+             "Name: (90377) Sedna Abs. magnitude: 1.30"
+             "Name: (225088) Gonggong Abs. magnitude: 1.93"
+             "Name: (90482) Orcus Abs. magnitude: 2.31"
+             "Name: (50000) Quaoar Abs. magnitude: 2.51"
+             "Name: (532037) 2013 FY27 Abs. magnitude: 3.20"
+             "Name: (4) Vesta Abs. magnitude: 3.28" ]
+                    
         actual =! expected
