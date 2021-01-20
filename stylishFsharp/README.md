@@ -17,7 +17,7 @@
 
 ## Testing
 
-I added a test project `stylishFshapr.Tests`.
+I added a test project `stylishFsharp.Tests`.
 
 Why? 
 
